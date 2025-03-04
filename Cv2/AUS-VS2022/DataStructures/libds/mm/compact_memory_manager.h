@@ -89,7 +89,7 @@ namespace ds::mm {
     BlockType* CompactMemoryManager<BlockType>::allocateMemoryAt(size_t index)
     {
         if (end_ == limit_) {
-            this->changeCapacity(2 * allocatedBlockCount_);
+            this->changeCapacity(2 * this->allocatedBlockCount_);
         }
         if (end_ - base_ > index) {
             std::memmove(
@@ -100,7 +100,7 @@ namespace ds::mm {
         }
 
         ++end_;
-        ++allocatedBlockCount_;
+        ++this->allocatedBlockCount_;
         
         return placement_new<BlockType>(base_ + index);
     }
@@ -114,7 +114,7 @@ namespace ds::mm {
             p++;
         }
         end_ = pointer;
-        allocatedBlockCount_ = end_ - base_;
+        this->allocatedBlockCount_ = end_ - base_;
     }
 
     template<typename BlockType>
@@ -128,7 +128,7 @@ namespace ds::mm {
             (end_ - base_ - index - 1) * sizeof(BlockType)
         );
         end_--;
-        allocatedBlockCount_--;
+        this->allocatedBlockCount_--;
     }
 
     template<typename BlockType>
@@ -183,7 +183,7 @@ namespace ds::mm {
             throw std::bad_alloc();
         }
         base_ = static_cast<BlockType*>(newBase);
-        end_ = base_ + allocatedBlockCount_;
+        end_ = base_ + this->allocatedBlockCount_;
         limit_ = base_ + newCapacity;
     }
 
@@ -196,7 +196,7 @@ namespace ds::mm {
     template<typename BlockType>
     bool CompactMemoryManager<BlockType>::equals(const CompactMemoryManager<BlockType>& other) const
     {
-        return this == &other || (allocatedBlockCount_ == other.allocatedBlockCount_
+        return this == &other || (this->allocatedBlockCount_ == other.allocatedBlockCount_
             && std::memcmp(
                 base_,
                 other.base_,
@@ -253,8 +253,8 @@ namespace ds::mm {
     template<typename BlockType>
     void CompactMemoryManager<BlockType>::print(std::ostream& os)
     {
-        os << "first = " << base_ << std::endl;
-        os << "last = " << end_ << std::endl;
+        os << "base = " << base_ << std::endl;
+        os << "end = " << end_ << std::endl;
         os << "limit = " << limit_ << std::endl;
         os << "block size = " << sizeof(BlockType) << "B" << std::endl;
 
@@ -265,10 +265,10 @@ namespace ds::mm {
             os << PtrPrintBin<BlockType>(ptr);
 
             if (ptr == base_) {
-                os << "<- first";
+                os << "<- end";
             }
             else if (ptr == end_) {
-                os << "<- last";
+                os << "<- end";
             }
             os << std::endl;
             ++ptr;
