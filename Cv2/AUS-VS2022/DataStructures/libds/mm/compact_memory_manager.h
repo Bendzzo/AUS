@@ -147,11 +147,12 @@ namespace ds::mm {
     CompactMemoryManager<BlockType>& CompactMemoryManager<BlockType>::assign
     (const CompactMemoryManager<BlockType>& other)
     {
-        if (*this != other) {
-            free(base_);
-            allocatedBlockCount_ = other.allocatedBlockCount_;
-            //TODO
-        }
+        //if (*this != other) {
+        //    free(base_);
+        //    allocatedBlockCount_ = other.allocatedBlockCount_;
+        //    //TODO
+        //}
+        return *this;
     }
 
     template<typename BlockType>
