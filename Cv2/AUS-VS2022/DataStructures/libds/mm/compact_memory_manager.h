@@ -147,11 +147,25 @@ namespace ds::mm {
     CompactMemoryManager<BlockType>& CompactMemoryManager<BlockType>::assign
     (const CompactMemoryManager<BlockType>& other)
     {
-        //if (*this != other) {
-        //    free(base_);
-        //    allocatedBlockCount_ = other.allocatedBlockCount_;
-        //    //TODO
-        //}
+        if (*this != other) {
+            free(base_);
+            allocatedBlockCount_ = other.allocatedBlockCount_;
+            BlockType* new_base_ = changeCapacity(
+                base_,
+                other.getAllocatedSizeCapacity()
+            );
+            if (new_base_ == NULL)
+            {
+                throw std::runtime_error("Error");
+            }base_ = new_base_;
+            end_ = base_ + allocatedBlockCount_;
+            limit_ = base_ + (other.limit_ - other.base_);
+            for (int i = 0; i < allocatedBlockCount_ - 1; i++)
+            {
+                //TODO
+                //new BlockType((other.base_ + i)*);
+            }
+        }
         return *this;
     }
 

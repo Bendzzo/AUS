@@ -20,10 +20,12 @@ int main() {
 	Student* first = cmm.allocateMemory();
 	Student* second = cmm.allocateMemory();
 	
+	
 	first->id = 1;
 	first->name = "Bendzo";
 
 	first->groupId = 100;
 
 	cmm.print(std::cout);
+	
 }
