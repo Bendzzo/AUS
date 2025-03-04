@@ -1,4 +1,5 @@
 #include <libds/mm/compact_memory_manager.h>
+#include <vector>
 
 struct Person {
 	int id;
@@ -7,6 +8,10 @@ struct Person {
 
 struct Student : Person{
 	int groupId;
+};
+
+struct Teacher : Person {
+	std::vector<std::string> courses;
 };
 
 
