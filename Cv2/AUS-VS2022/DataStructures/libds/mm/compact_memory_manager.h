@@ -147,7 +147,7 @@ namespace ds::mm {
     CompactMemoryManager<BlockType>& CompactMemoryManager<BlockType>::assign
     (const CompactMemoryManager<BlockType>& other)
     {
-        if (this != &other) {
+        /*if (this != &other) {
             releaseMemory(base_);
             this->allocatedBlockCount_ = other.allocatedBlockCount_;
             BlockType* new_base_ = static_cast<BlockType*> (std::realloc(
@@ -165,7 +165,8 @@ namespace ds::mm {
             {
                 placement_new<BlockType>(*(other.base_ + i))(base_ + i);
             }
-        }
+        }*/
+        throw std::runtime_error("Not implemented yet");
         return *this;
     }
 
