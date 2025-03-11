@@ -150,10 +150,10 @@ namespace ds::mm {
         if (this != &other) {
             releaseMemory(base_);
             this->allocatedBlockCount_ = other.allocatedBlockCount_;
-            BlockType* new_base_ = changeCapacity(
+            BlockType* new_base_ = static_cast<BlockType*> (std::realloc(
                 base_,
                 other.getAllocatedCapacitySize()
-            );
+            ));
             if (new_base_ == NULL)
             {
                 throw std::runtime_error("Error");
@@ -163,7 +163,7 @@ namespace ds::mm {
             limit_ = base_ + (other.limit_ - other.base_);
             for (int i = 0; i < this->allocatedBlockCount_ - 1; i++)
             {
-                placement_new<BlockType>((other.base_ + i)*) (base_ + index_);
+                placement_new<BlockType>(*(other.base_ + i))(base_ + i);
             }
         }
         return *this;
