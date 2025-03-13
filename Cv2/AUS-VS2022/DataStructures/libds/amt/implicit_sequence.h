@@ -173,9 +173,9 @@ namespace ds::amt {
 	template<typename DataType>
 	typename ImplicitSequence<DataType>::BlockType& ImplicitSequence<DataType>::insertBefore(BlockType& block)
     {
-		// TODO 03
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		return *this->getMemoryManager()->allocateMemoryAt(
+			this->getMemoryManager()->calculateIndex(block)
+		);
 
 	}
 
@@ -237,6 +237,8 @@ namespace ds::amt {
 		    sequence_(sequence),
             position_(index)
     {
+		/*sequence_ = sequence;
+		position_ = index;*/
     }
 
     template <typename DataType>
@@ -298,6 +300,7 @@ namespace ds::amt {
     CyclicImplicitSequence<DataType>::CyclicImplicitSequence():
 		IS<DataType>()
 	{
+		
 	}
 
 	template<typename DataType>
@@ -309,17 +312,39 @@ namespace ds::amt {
 	template<typename DataType>
     size_t CyclicImplicitSequence<DataType>::indexOfNext(size_t currentIndex) const
 	{
-		// TODO 03
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		int size = this->size();
+		if (size != 0)
+		{
+			if (currentIndex >= size - 1)
+			{
+				return 0;
+			} else
+			{
+				return currentIndex + 1;
+			}
+		} else
+		{
+			return INVALID_INDEX;
+		}
 	}
 
 	template<typename DataType>
     size_t CyclicImplicitSequence<DataType>::indexOfPrevious(size_t currentIndex) const
 	{
-		// TODO 03
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		int size = this->size();
+		if (size != 0)
+		{
+			if (currentIndex <= 0)
+			{
+				return size - 1;
+			} else
+			{
+				return currentIndex - 1;
+			}
+		} else
+		{
+			return INVALID_INDEX;
+		}
 	}
 
 }
