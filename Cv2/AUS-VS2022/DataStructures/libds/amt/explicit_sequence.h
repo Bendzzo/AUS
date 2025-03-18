@@ -302,17 +302,27 @@ namespace ds::amt {
     template<typename BlockType>
     BlockType& ExplicitSequence<BlockType>::insertFirst()
     {
-        // TODO 04
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+	    if (this->size() == 0)
+	    {
+            /*first_ = last_ = AMS<BlockType>::memoryManager_->allocateMemory();*/
+            first_ = AMS<BlockType>::memoryManager_->allocateMemory();
+            last_ = first_;
+            /*last_ = this->memoryManager_->allocateMemory();*/
+            return *first_;
+	    }
+	    return this->insertBefore(*first_);
     }
 
     template<typename BlockType>
     BlockType& ExplicitSequence<BlockType>::insertLast()
     {
-        // TODO 04
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        if (this->size() == 0)
+        {
+            first_ = AMS<BlockType>::memoryManager_->allocateMemory();
+            last_ = first_;
+            return *last_;
+        }
+        return this->insertAfter(*last_);
     }
 
     template<typename BlockType>
@@ -328,17 +338,29 @@ namespace ds::amt {
     template<typename BlockType>
     BlockType& ExplicitSequence<BlockType>::insertAfter(BlockType& block)
     {
-        // TODO 04
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        BlockType& nextBlock = this->accessNext(block);
+        BlockType& newBlock = this->memoryManager_->allocateMemory();
+        this->connectBlocks(block, newBlock);
+        this->connectBlocks(newBlock, nextBlock);
+        if (last_ == &block)
+        {
+	        last_ = newBlock;
+        }
+        return newBlock;
     }
 
     template<typename BlockType>
     BlockType& ExplicitSequence<BlockType>::insertBefore(BlockType& block)
     {
-        // TODO 04
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        BlockType& previousBlock = this->accessPrevious(block);
+        BlockType& newBlock = AMS<BlockType>::memoryManager_->allocateMemory();
+        this->connectBlocks(previousBlock, newBlock);
+        this->connectBlocks(newBlock, block);
+        if (first_ == &block)
+        {
+            first_ = &newBlock;
+        }
+        return newBlock;
     }
 
     template<typename BlockType>
