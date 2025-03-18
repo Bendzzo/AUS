@@ -174,7 +174,7 @@ namespace ds::amt {
     template<typename BlockType>
     ExplicitSequence<BlockType>::~ExplicitSequence()
     {
-        // TODO 04
+        this->clear();
     }
 
     template<typename BlockType>
@@ -197,25 +197,63 @@ namespace ds::amt {
     template<typename BlockType>
     void ExplicitSequence<BlockType>::clear()
     {
-        // TODO 04
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        BlockType* current = this->accessFirst();
+        while (current != nullptr)
+        {
+            BlockType* next = this->accessNext(*current);
+            AMS<BlockType>::memoryManager_->releaseMemory(current);
+            current = next;
+        }
+        first_ = nullptr;
+        last_ = nullptr;
     }
 
     template<typename BlockType>
     bool ExplicitSequence<BlockType>::equals(const AMT& other)
     {
-        // TODO 04
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+	    if (this == &other)
+	    {
+            return true;
+	    }
+
+	    if (this->size() != other.size())
+	    {
+            return false;
+	    }
+
+        const ExplicitSequence<BlockType>* otherSequence = 
+            dynamic_cast<const ExplicitSequence<BlockType>*>(&other);
+
+	    if (otherSequence == nullptr)
+	    {
+		    return false;
+	    }
+
+        BlockType* my = this->accessFirst();
+        BlockType* his = otherSequence->accessFirst();
+	    while (my != nullptr)
+	    {
+		    if (my->data_ != his->data_)
+		    {
+                return false;
+		    }
+            my = this->accessNext(*my);
+            his = this->accessNext(*his);
+	    }
     }
 
     template<typename BlockType>
     size_t ExplicitSequence<BlockType>::calculateIndex(BlockType& data)
     {
-        // TODO 04
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        size_t index = 0;
+        BlockType* current = this->accessFirst();
+        while (current != nullptr && current != &data)
+        {
+            ++index;
+            current = this->accessNext(*current);
+        }
+        return current == nullptr
+    		? INVALID_INDEX : index;
     }
 
     template<typename BlockType>
@@ -233,9 +271,17 @@ namespace ds::amt {
     template<typename BlockType>
     BlockType* ExplicitSequence<BlockType>::access(size_t index) const
     {
-        // TODO 04
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+	    if (index < this->size())
+	    {
+            return nullptr;
+	    }
+
+        BlockType* current = this->accessFirst();
+	    for (size_t i = 0; i < index; ++i)
+	    {
+            current = this->accessNext(*current);
+	    }
+        return current;
     }
 
     template<typename BlockType>
