@@ -147,9 +147,11 @@ void nacitajVsetkyZastavky(string nazovSuboru)
 		if (!tempString.empty())
 		{
 			zastavka.longitude = stod(tempString);
+			
 		}
 		else
 		{
+			zastavka.vypis();
 			zastavka.longitude = 1000000.0;
 		}
 
@@ -159,10 +161,12 @@ void nacitajVsetkyZastavky(string nazovSuboru)
 		if (!tempString.empty())
 		{
 			zastavka.latitude = stod(tempString);
+			
 		}
 		else
 		{
-			zastavka.longitude = 1000000.0;
+			//zastavka.vypis();
+			zastavka.latitude = 1000000.0;
 		}
 
 		// Municipality
@@ -179,9 +183,10 @@ void nacitajVsetkyZastavky(string nazovSuboru)
 int main() {
 	nacitajVsetkyZastavky("GRT_Stops.csv");
 
-	vypisVsetkyNaUlici("Winston Blvd");
+	//vypisVsetkyNaUlici("Winston Blvd");
 	//vypisVsetkyVObci("Wilmot");
 	//vypisVsetkyVRegione();
 
+	//vypisVsetkyZastavky();
 	return 0;
 }

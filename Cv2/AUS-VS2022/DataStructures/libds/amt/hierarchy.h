@@ -192,9 +192,14 @@ namespace ds::amt {
 	template<typename BlockType>
     size_t Hierarchy<BlockType>::level(const BlockType& node) const
 	{
-		// TODO 05
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		size_t result = 0;
+		BlockType* parent = this->accessParent(node);
+		while (parent != nullptr)
+		{
+			++result;
+			parent = this->accessParent(*parent);
+		}
+		return result;
 	}
 
 	template<typename BlockType>
@@ -222,41 +227,52 @@ namespace ds::amt {
 	template<typename BlockType>
     bool Hierarchy<BlockType>::isRoot(const BlockType& node) const
 	{
-		// TODO 05
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		return this->accessParent(node) == nullptr;
 	}
 
 	template<typename BlockType>
     bool Hierarchy<BlockType>::isNthSon(const BlockType& node, size_t sonOrder) const
 	{
-		// TODO 05
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		BlockType* parent = this->accessParent(node);
+		return parent == nullptr ?  false :  this->accessSon(*parent, sonOrder) == &node;
 	}
 
 	template<typename BlockType>
     bool Hierarchy<BlockType>::isLeaf(const BlockType& node) const
 	{
-		// TODO 05
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		return this->degree(node) == 0;
 	}
 
 	template<typename BlockType>
     bool Hierarchy<BlockType>::hasNthSon(const BlockType& node, size_t sonOrder) const
 	{
-		// TODO 05
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		return this->accessSon(node, sonOrder) != nullptr;
 	}
 
 	template<typename BlockType>
     void Hierarchy<BlockType>::processPreOrder(const BlockType* node, std::function<void(const BlockType*)> operation) const
 	{
-		// TODO 05
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		if (node == nullptr)
+		{
+			return;
+		}
+
+		operation(node);
+
+		size_t sonIndex = 0;
+		size_t sonsProccessed = 0;
+		size_t degree = this->degree(*node);
+
+		while (sonsProccessed < degree)
+		{
+			BlockType* son = this->accessSon(*node, sonIndex);
+			if (son != nullptr)
+			{
+				this->processPreOrder(this->accessSon(*node, i), operation);
+				++sonsProccessed;
+			}
+			++sonIndex;
+		}
 	}
 
 	template<typename BlockType>

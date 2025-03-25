@@ -1995,8 +1995,8 @@ StopID;Street;Longitude;Latitude;Municipality
 14086;River Rd E;-80.41943396;43.4257526;Kitchener
 13546;River Rd E;-80.430959;43.437171;Kitchener
 14895;River Rd E;-80.43109293;43.43699528;Kitchener
-14802;River Rd E;;1000000;Kitchener
-14803;River Rd E;;1000000;Kitchener
+14802;River Rd E;;;Kitchener
+14803;River Rd E;;;Kitchener
 10013;River Rd E;-80.45416802;43.45846696;Kitchener
 10079;River Rd E;-80.45485995;43.458802;Kitchener
 10725;River Rd E;-80.43319699;43.43896197;Kitchener
