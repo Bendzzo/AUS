@@ -151,7 +151,7 @@ void nacitajVsetkyZastavky(string nazovSuboru)
 		}
 		else
 		{
-			zastavka.vypis();
+			//zastavka.vypis();
 			zastavka.longitude = 1000000.0;
 		}
 
@@ -183,7 +183,7 @@ void nacitajVsetkyZastavky(string nazovSuboru)
 int main() {
 	nacitajVsetkyZastavky("GRT_Stops.csv");
 
-	//vypisVsetkyNaUlici("Winston Blvd");
+	vypisVsetkyNaUlici("Regina St N");
 	//vypisVsetkyVObci("Wilmot");
 	//vypisVsetkyVRegione();
 

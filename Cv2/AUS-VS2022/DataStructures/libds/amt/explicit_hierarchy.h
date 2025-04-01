@@ -236,25 +236,28 @@ namespace ds::amt {
 	template<typename BlockType>
     void ExplicitHierarchy<BlockType>::clear()
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		this->processPostOrder(this->accessRoot(), [](BlockType* block)
+			{
+				this->memoryManager_->releaseMemory(block);
+			});
+		root_ = nullptr;
 	}
 
 	template<typename BlockType>
     size_t ExplicitHierarchy<BlockType>::size() const
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		size_t size = 0;
+		this->processPreOrder(this->accessRoot(), [&](const BlockType*)		
+		{
+				 ++size;
+		});
+		return size;
 	}
 
 	template<typename BlockType>
     bool ExplicitHierarchy<BlockType>::isEmpty() const
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		return root_ == nullptr;
 	}
 
 	template<typename BlockType>
@@ -315,33 +318,30 @@ namespace ds::amt {
 	template<typename BlockType>
     BlockType* ExplicitHierarchy<BlockType>::accessRoot() const
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		return root_;
 	}
 
 	template<typename BlockType>
     BlockType* ExplicitHierarchy<BlockType>::accessParent(const BlockType& node) const
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		return static_cast<BlockType*>(node.parent_);
 	}
 
 	template<typename BlockType>
     BlockType& ExplicitHierarchy<BlockType>::emplaceRoot()
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		root_ = this->memoryManager_->allocateMemory();
+		return *root_;
 	}
 
 	template<typename BlockType>
     void ExplicitHierarchy<BlockType>::changeRoot(BlockType* newRoot)
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		if (newRoot != nullptr)
+		{
+			newRoot->parent_ = nullptr;
+		}
+		root_ = newRoot;
 	}
 
 	template<typename DataType>

@@ -318,9 +318,13 @@ namespace ds::amt {
 	template<typename BlockType>
     void BinaryHierarchy<BlockType>::processInOrder(const BlockType* node, std::function<void(const BlockType*)> operation) const
 	{
-		// TODO 05
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		if (node == nullptr)
+		{
+			return;
+		}
+		this->processInOrder(this->accessLeftSon(*node), operation);
+		operation(node);
+		this->processInOrder(this->accessRightSon(*node), operation);
 	}
 
 	template<typename BlockType>
