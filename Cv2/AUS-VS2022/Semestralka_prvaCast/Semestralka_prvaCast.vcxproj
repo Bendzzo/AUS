@@ -135,6 +135,7 @@
     <None Include="GRT_Stops.csv" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FilterAlgorithm.h" />
     <ClInclude Include="Zastavka.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

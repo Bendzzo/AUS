@@ -28,5 +28,8 @@
     <ClInclude Include="Zastavka.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FilterAlgorithm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

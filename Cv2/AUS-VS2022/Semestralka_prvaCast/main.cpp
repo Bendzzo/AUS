@@ -1,72 +1,114 @@
 ﻿#include "Zastavka.h"
+#include "FilterAlgorithm.h"
+#include <iostream>
+#include <limits>
+#include <fstream>
+#include <sstream>
+
 
 vector<Zastavka> zastavky;
-vector<Zastavka> vObci;
-vector<Zastavka> naUlici;
-vector<Zastavka> vRegione;
+vector<Zastavka> filtrovaneZastavky;
 
 
-void vypisVsetkyVObci(string nazovObce)
-{
-	vObci.clear();
-	cout << "Zastavky ktore sa nachadzaju v obci " << nazovObce << endl;
-	cout << "______________________" << endl;
-	for (auto zastavka : zastavky)
-	{
-		if (zastavka.isInMunicipality(nazovObce))
-		{
-			vObci.push_back(zastavka);
-			zastavka.vypis();
-		}
-	}
-	cout << "Pocet zastavok: " << vObci.size() << endl;
-	cout << "______________________" << endl;
-}
-
-void vypisVsetkyNaUlici(string nazovUlice)
-{
-	naUlici.clear();
-	cout << "Zastavky ktore sa nachadzaju na ulici " << nazovUlice << endl;
-	cout << "______________________" << endl;
-	for (auto zastavka : zastavky)
-	{
-		if (zastavka.isOnStreet(nazovUlice))
-		{
-			naUlici.push_back(zastavka);
-			zastavka.vypis();
-		}
-	}
-	cout << "Pocet zastavok: " << naUlici.size() << endl;
-	cout << "______________________" << endl;
-}
-
-void vypisVsetkyVRegione(double maxLongitude, double maxLatitude, double minLongitude, double minLatitude)
-{
-	zastavky.clear();
-	cout << "Zastavky ktore sa nachadzaju v medzi suradnicami: "
-		<< maxLongitude << " " << maxLatitude
-		<< " " << minLongitude << " " << minLatitude << "[maxLongitude][maxLatitude][minLongitude][minLatitude] " << endl;
-
-	cout << "______________________" << endl;
-	for (auto zastavka : zastavky)
-	{
-		if (zastavka.isInRegion(maxLongitude, maxLatitude, minLongitude, minLatitude))
-		{
-			vRegione.push_back(zastavka);
-			zastavka.vypis();
-		}
-	}
-	cout << "Pocet zastavok: " << vRegione.size() << endl;
-	cout << "______________________" << endl;
-}
-
-void vypisVsetkyZastavky()
-{
-	for (auto zastavka : zastavky)
-	{
+void vypisVsetkyZastavky(const vector<Zastavka>& zastavkyNaVypis) {
+	for (const auto& zastavka : zastavkyNaVypis) {
 		zastavka.vypis();
 	}
-	cout << "Celkovy pocet zastavok: " << zastavky.size() << endl;
+	cout << "Celkovy pocet zastavok: " << zastavkyNaVypis.size() << endl;
+}
+
+void zobrazMenu() {
+    FilterAlgorithm<vector<Zastavka>::iterator, vector<Zastavka>> filter;
+
+    int volba;
+    string vstup;
+
+    while (true) {
+        cout << "========== MENU ==========" << endl;
+        cout << "1. Filtrovat podla obce" << endl;
+        cout << "2. Filtrovat podla ulice" << endl;
+        cout << "3. Filtrovat podla geografickej oblasti" << endl;
+        cout << "4. Vypisat vsetky zastavky" << endl;
+        cout << "0. Koniec" << endl;
+        cout << "==========================" << endl;
+        cout << "Zadajte cislo volby: ";
+        cin >> volba;
+
+        // Clear input buffer
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        switch (volba) {
+        case 0:
+            return;
+
+        case 1: {
+            cout << "Zadajte nazov obce: ";
+            getline(cin, vstup);
+
+            //isInMunicipality funkcia
+            auto municipalityPredicate = [vstup](const Zastavka& z) -> bool {
+                return z.obec == vstup;
+                };
+
+            filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, municipalityPredicate);
+
+            cout << "Zastavky v obci " << vstup << ":" << endl;
+            vypisVsetkyZastavky(filtrovaneZastavky);
+            break;
+        }
+
+        case 2: {
+            cout << "Zadajte nazov ulice: ";
+            getline(cin, vstup);
+
+            //isOnStreet funkcia
+            auto streetPredicate = [vstup](const Zastavka& z) -> bool {
+                return z.ulica.find(vstup) != string::npos;
+                };
+
+            filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, streetPredicate);
+
+            cout << "Zastavky na ulici " << vstup << ":" << endl;
+            vypisVsetkyZastavky(filtrovaneZastavky);
+            break;
+        }
+
+        case 3: {
+            double minLat, maxLat, minLong, maxLong;
+            cout << "Zadajte minimálnu zemepisnú šírku (latitude): ";
+            cin >> minLat;
+            cout << "Zadajte maximálnu zemepisnú šírku (latitude): ";
+            cin >> maxLat;
+            cout << "Zadajte minimálnu zemepisnú dĺžku (longitude): ";
+            cin >> minLong;
+            cout << "Zadajte maximálnu zemepisnú dĺžku (longitude): ";
+            cin >> maxLong;
+
+            //isInRegion funkcia
+            auto regionPredicate = [minLat, maxLat, minLong, maxLong](const Zastavka& z) -> bool {
+                return z.latitude >= minLat && z.latitude <= maxLat &&
+                    z.longitude >= minLong && z.longitude <= maxLong;
+                };
+
+            filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, regionPredicate);
+
+            cout << "Zastavky v zadanej geografickej oblasti:" << endl;
+            vypisVsetkyZastavky(filtrovaneZastavky);
+            break;
+        }
+
+        case 4:
+            cout << "Všetky zastavky:" << endl;
+            vypisVsetkyZastavky(zastavky);
+            break;
+
+        default:
+            cout << "Neplatná voľba. Skúste znova." << endl;
+        }
+
+
+        cout << endl;
+    }
 }
 
 void nacitajVsetkyZastavky(string nazovSuboru)
@@ -130,12 +172,7 @@ void nacitajVsetkyZastavky(string nazovSuboru)
 }
 
 int main() {
-	nacitajVsetkyZastavky("GRT_Stops.csv");
-
-	vypisVsetkyNaUlici("Regina St N");
-	//vypisVsetkyVObci("Wilmot");
-	//vypisVsetkyVRegione();
-
-	//vypisVsetkyZastavky();
-	return 0;
+    nacitajVsetkyZastavky("GRT_Stops.csv");
+    zobrazMenu();
+    return 0;
 }
