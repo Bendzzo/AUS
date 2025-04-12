@@ -162,13 +162,13 @@ namespace ds::amt {
 		void removeSon(BlockType& parent, size_t sonOrder) override;
 
 		BlockType* accessLeftSon(const BlockType& node) const;
-        BlockType* accessRightSon(const BlockType& node) const;
+		BlockType* accessRightSon(const BlockType& node) const;
 
-        bool isLeftSon(const BlockType& node) const;
-        bool isRightSon(const BlockType& node) const;
+		bool isLeftSon(const BlockType& node) const;
+		bool isRightSon(const BlockType& node) const;
 
-        bool hasLeftSon(const BlockType& node) const;
-        bool hasRightSon(const BlockType& node) const;
+		bool hasLeftSon(const BlockType& node) const;
+		bool hasRightSon(const BlockType& node) const;
 
 		BlockType& insertLeftSon(BlockType& parent);
 		BlockType& insertRightSon(BlockType& parent);
@@ -186,42 +186,42 @@ namespace ds::amt {
 	//----------
 
 	template<typename BlockType>
-    ExplicitHierarchy<BlockType>::ExplicitHierarchy() :
+	ExplicitHierarchy<BlockType>::ExplicitHierarchy() :
 		root_(nullptr)
 	{
 	}
 
 	template<typename BlockType>
-    ExplicitHierarchy<BlockType>::ExplicitHierarchy(const ExplicitHierarchy& other) :
+	ExplicitHierarchy<BlockType>::ExplicitHierarchy(const ExplicitHierarchy& other) :
 		ExplicitHierarchy()
 	{
 		this->assign(other);
 	}
 
-    template<typename BlockType>
-    AMT& ExplicitHierarchy<BlockType>::assign(const AMT& other)
+	template<typename BlockType>
+	AMT& ExplicitHierarchy<BlockType>::assign(const AMT& other)
 	{
 		const ExplicitHierarchy<BlockType>& otherHierarchy = dynamic_cast<const ExplicitHierarchy<BlockType>&>(other);
 
 		std::function<void(BlockType*, BlockType*)> copy;
 		copy = [&](BlockType* myBlock, BlockType* otherBlock)
-		{
-		    myBlock->data_ = otherBlock->data_;
-
-            const size_t sonCount = otherHierarchy.degree(*otherBlock);
-			size_t copiedSonCount = 0;
-			size_t sonIndex = 0;
-			while (copiedSonCount < sonCount)
 			{
-				BlockType* otherSon = otherHierarchy.accessSon(*otherBlock, sonIndex);
-				if (otherSon != nullptr)
+				myBlock->data_ = otherBlock->data_;
+
+				const size_t sonCount = otherHierarchy.degree(*otherBlock);
+				size_t copiedSonCount = 0;
+				size_t sonIndex = 0;
+				while (copiedSonCount < sonCount)
 				{
-					copy(&this->emplaceSon(*myBlock, sonIndex), otherSon);
-					copiedSonCount++;
+					BlockType* otherSon = otherHierarchy.accessSon(*otherBlock, sonIndex);
+					if (otherSon != nullptr)
+					{
+						copy(&this->emplaceSon(*myBlock, sonIndex), otherSon);
+						copiedSonCount++;
+					}
+					sonIndex++;
 				}
-				sonIndex++;
-			}
-		};
+			};
 
 		this->clear();
 		if (otherHierarchy.root_ != nullptr)
@@ -234,34 +234,29 @@ namespace ds::amt {
 	}
 
 	template<typename BlockType>
-    void ExplicitHierarchy<BlockType>::clear()
+	void ExplicitHierarchy<BlockType>::clear()
 	{
-		this->processPostOrder(this->accessRoot(), [](BlockType* block)
+		Hierarchy<BlockType>::processPostOrder(root_, [&](BlockType* b)
 			{
-				this->memoryManager_->releaseMemory(block);
+				AMS<BlockType>::memoryManager_->releaseMemory(b);
 			});
 		root_ = nullptr;
 	}
 
 	template<typename BlockType>
-    size_t ExplicitHierarchy<BlockType>::size() const
+	size_t ExplicitHierarchy<BlockType>::size() const
 	{
-		size_t size = 0;
-		this->processPreOrder(this->accessRoot(), [&](const BlockType*)		
-		{
-				 ++size;
-		});
-		return size;
+		return root_ != nullptr ? Hierarchy<BlockType>::nodeCount(*root_) : 0;
 	}
 
 	template<typename BlockType>
-    bool ExplicitHierarchy<BlockType>::isEmpty() const
+	bool ExplicitHierarchy<BlockType>::isEmpty() const
 	{
 		return root_ == nullptr;
 	}
 
 	template<typename BlockType>
-    bool ExplicitHierarchy<BlockType>::equals(const AMT& other)
+	bool ExplicitHierarchy<BlockType>::equals(const AMT& other)
 	{
 		const ExplicitHierarchy<BlockType>* otherHierarchy = dynamic_cast<const ExplicitHierarchy<BlockType>*>(&other);
 
@@ -272,70 +267,70 @@ namespace ds::amt {
 
 		std::function<bool(BlockType*, BlockType*)> compare;
 		compare = [&](BlockType* myBlock, BlockType* otherBlock) -> bool
-		{
-			if (myBlock == nullptr && otherBlock == nullptr)
 			{
-				return true;
-			}
-			else if (myBlock == nullptr || otherBlock == nullptr)
-			{
-				return false;
-			}
-			else if (this->degree(*myBlock) != otherHierarchy->degree(*otherBlock))
-			{
-				return false;
-			}
-			else if (!(myBlock->data_ == otherBlock->data_))
-			{
-				return false;
-			}
-			else
-			{
-				size_t sonCount = this->degree(*myBlock);
-				size_t sonsProcessed = 0;
-				size_t i = 0;
-				while (sonsProcessed < sonCount)
+				if (myBlock == nullptr && otherBlock == nullptr)
 				{
-					BlockType* mySon = this->accessSon(*myBlock, i);
-					BlockType* otherSon = otherHierarchy->accessSon(*otherBlock, i);
-					if (mySon != nullptr)
-					{
-						++sonsProcessed;
-					}
-					if (!compare(mySon, otherSon))
-					{
-						return false;
-					}
-					++i;
+					return true;
 				}
-				return true;
-			}
-		};
+				else if (myBlock == nullptr || otherBlock == nullptr)
+				{
+					return false;
+				}
+				else if (this->degree(*myBlock) != otherHierarchy->degree(*otherBlock))
+				{
+					return false;
+				}
+				else if (!(myBlock->data_ == otherBlock->data_))
+				{
+					return false;
+				}
+				else
+				{
+					size_t sonCount = this->degree(*myBlock);
+					size_t sonsProcessed = 0;
+					size_t i = 0;
+					while (sonsProcessed < sonCount)
+					{
+						BlockType* mySon = this->accessSon(*myBlock, i);
+						BlockType* otherSon = otherHierarchy->accessSon(*otherBlock, i);
+						if (mySon != nullptr)
+						{
+							++sonsProcessed;
+						}
+						if (!compare(mySon, otherSon))
+						{
+							return false;
+						}
+						++i;
+					}
+					return true;
+				}
+			};
 
 		return compare(root_, otherHierarchy->root_);
 	}
 
 	template<typename BlockType>
-    BlockType* ExplicitHierarchy<BlockType>::accessRoot() const
+	BlockType* ExplicitHierarchy<BlockType>::accessRoot() const
 	{
 		return root_;
 	}
 
 	template<typename BlockType>
-    BlockType* ExplicitHierarchy<BlockType>::accessParent(const BlockType& node) const
+	BlockType* ExplicitHierarchy<BlockType>::accessParent(const BlockType& node) const
 	{
 		return static_cast<BlockType*>(node.parent_);
 	}
 
 	template<typename BlockType>
-    BlockType& ExplicitHierarchy<BlockType>::emplaceRoot()
+	BlockType& ExplicitHierarchy<BlockType>::emplaceRoot()
 	{
-		root_ = this->memoryManager_->allocateMemory();
+		root_ = AMS<BlockType>::memoryManager_->allocateMemory();
 		return *root_;
 	}
 
 	template<typename BlockType>
-    void ExplicitHierarchy<BlockType>::changeRoot(BlockType* newRoot)
+	void ExplicitHierarchy<BlockType>::changeRoot(BlockType* newRoot)
 	{
 		if (newRoot != nullptr)
 		{
@@ -357,50 +352,59 @@ namespace ds::amt {
 		this->assign(other);
 	}
 
-    template <typename DataType>
-    MultiWayExplicitHierarchy<DataType>::~MultiWayExplicitHierarchy()
-    {
-		// TODO 07
-    }
-
-    template<typename DataType>
-    size_t MultiWayExplicitHierarchy<DataType>::degree(const BlockType& node) const
+	template <typename DataType>
+	MultiWayExplicitHierarchy<DataType>::~MultiWayExplicitHierarchy()
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		this->clear();
 	}
 
 	template<typename DataType>
-    auto MultiWayExplicitHierarchy<DataType>::accessSon(const BlockType& node, size_t sonOrder) const -> BlockType*
+	size_t MultiWayExplicitHierarchy<DataType>::degree(const BlockType& node) const
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		return node.sons_->size();
 	}
 
 	template<typename DataType>
-    auto MultiWayExplicitHierarchy<DataType>::emplaceSon(BlockType& parent, size_t sonOrder) -> BlockType&
+	auto MultiWayExplicitHierarchy<DataType>::accessSon(const BlockType& node, size_t sonOrder) const -> BlockType*
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		MemoryBlock<BlockType*>* sonBlock = node.sons_->access(sonOrder);
+		return sonBlock != nullptr ? sonBlock->data_ : nullptr;
 	}
 
 	template<typename DataType>
-    void MultiWayExplicitHierarchy<DataType>::changeSon(BlockType& parent, size_t sonOrder, BlockType* newSon)
+	auto MultiWayExplicitHierarchy<DataType>::emplaceSon(BlockType& parent, size_t sonOrder) -> BlockType&
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		BlockType* newSon = AbstractMemoryStructure<BlockType>::memoryManager_->allocateMemory();
+		parent.sons_->insert(sonOrder).data_ = newSon;
+		newSon->parent_ = &parent;
+		return *newSon;
 	}
 
 	template<typename DataType>
-    void MultiWayExplicitHierarchy<DataType>::removeSon(BlockType& parent, size_t sonOrder)
+	void MultiWayExplicitHierarchy<DataType>::changeSon(BlockType& parent, size_t sonOrder, BlockType* newSon)
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		MemoryBlock<BlockType*>* sonBlock = parent.sons_->access(sonOrder);
+
+		BlockType* oldSon = sonBlock->data_;
+		sonBlock->data_ = newSon;
+
+		if (oldSon != nullptr) { oldSon->parent_ = nullptr; }
+		if (newSon != nullptr) { newSon->parent_ = &parent; }
+	}
+
+	template<typename DataType>
+	void MultiWayExplicitHierarchy<DataType>::removeSon(BlockType& parent, size_t sonOrder)
+	{
+		MemoryBlock<BlockType*>* sonBlock = parent.sons_->access(sonOrder);
+
+		BlockType* removedSon = sonBlock->data_;
+
+		Hierarchy<BlockType>::processPostOrder(removedSon, [&](BlockType* b)
+			{
+				AbstractMemoryStructure<BlockType>::memoryManager_->releaseMemory(b);
+			});
+
+		parent.sons_->remove(sonOrder);
 	}
 
 	template<typename DataType, size_t K>
@@ -416,50 +420,67 @@ namespace ds::amt {
 		this->assign(other);
 	}
 
-    template <typename DataType, size_t K>
-    KWayExplicitHierarchy<DataType, K>::~KWayExplicitHierarchy()
-    {
-		// TODO 07
-    }
-
-    template<typename DataType, size_t K>
-    size_t KWayExplicitHierarchy<DataType, K>::degree(const BlockType& node) const
+	template <typename DataType, size_t K>
+	KWayExplicitHierarchy<DataType, K>::~KWayExplicitHierarchy()
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		this->clear();
+	}
+
+	template<typename DataType, size_t K>
+	size_t KWayExplicitHierarchy<DataType, K>::degree(const BlockType& node) const
+	{
+		size_t result = 0;
+		for (BlockType* b : *node.sons_)
+		{
+			if (b != nullptr)
+			{
+				result++;
+			}
+		}
+		return result;
 	}
 
 	template<typename DataType, size_t K>
 	auto KWayExplicitHierarchy<DataType, K>::accessSon(const BlockType& node, size_t sonOrder) const -> BlockType*
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		MemoryBlock<BlockType*>* sonBlock = node.sons_->access(sonOrder);
+		return sonBlock != nullptr ? sonBlock->data_ : nullptr;
 	}
 
 	template<typename DataType, size_t K>
-    auto KWayExplicitHierarchy<DataType, K>::emplaceSon(BlockType& parent, size_t sonOrder) -> BlockType&
+	auto KWayExplicitHierarchy<DataType, K>::emplaceSon(BlockType& parent, size_t sonOrder) -> BlockType&
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		BlockType* newSon = AbstractMemoryStructure<BlockType>::memoryManager_->allocateMemory();
+		parent.sons_->access(sonOrder)->data_ = newSon;
+		newSon->parent_ = &parent;
+		return *newSon;
 	}
 
 	template<typename DataType, size_t K>
-    void KWayExplicitHierarchy<DataType, K>::changeSon(BlockType& parent, size_t sonOrder, BlockType* newSon)
+	void KWayExplicitHierarchy<DataType, K>::changeSon(BlockType& parent, size_t sonOrder, BlockType* newSon)
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		MemoryBlock<BlockType*>* sonBlock = parent.sons_->access(sonOrder);
+
+		BlockType* oldSon = sonBlock->data_;
+		sonBlock->data_ = newSon;
+
+		if (oldSon != nullptr) { oldSon->parent_ = nullptr; }
+		if (newSon != nullptr) { newSon->parent_ = &parent; }
 	}
 
 	template<typename DataType, size_t K>
-    void KWayExplicitHierarchy<DataType, K>::removeSon(BlockType& parent, size_t sonOrder)
+	void KWayExplicitHierarchy<DataType, K>::removeSon(BlockType& parent, size_t sonOrder)
 	{
-		// TODO 07
-		// po implementacii vymazte vyhodenie vynimky!
-		throw std::runtime_error("Not implemented yet");
+		MemoryBlock<BlockType*>* sonBlock = parent.sons_->access(sonOrder);
+
+		BlockType* removedSon = sonBlock->data_;
+
+		Hierarchy<BlockType>::processPostOrder(removedSon, [&](BlockType* b)
+			{
+				AbstractMemoryStructure<BlockType>::memoryManager_->releaseMemory(b);
+			});
+
+		sonBlock->data_ = nullptr;
 	}
 
 	template<typename DataType>
@@ -475,14 +496,14 @@ namespace ds::amt {
 		this->assign(other);
 	}
 
-    template <typename DataType>
-    BinaryExplicitHierarchy<DataType>::~BinaryExplicitHierarchy()
-    {
-		// TODO 07
-    }
+	template <typename DataType>
+	BinaryExplicitHierarchy<DataType>::~BinaryExplicitHierarchy()
+	{
+		this->clear();
+	}
 
-    template<typename DataType>
-    size_t BinaryExplicitHierarchy<DataType>::degree(const BlockType& node) const
+	template<typename DataType>
+	size_t BinaryExplicitHierarchy<DataType>::degree(const BlockType& node) const
 	{
 		size_t result = 0;
 		if (node.left_ != nullptr) ++result;
@@ -491,7 +512,7 @@ namespace ds::amt {
 	}
 
 	template<typename DataType>
-    auto BinaryExplicitHierarchy<DataType>::accessSon(const BlockType& node, size_t sonOrder) const -> BlockType*
+	auto BinaryExplicitHierarchy<DataType>::accessSon(const BlockType& node, size_t sonOrder) const -> BlockType*
 	{
 		switch (sonOrder)
 		{
@@ -518,7 +539,7 @@ namespace ds::amt {
 	}
 
 	template<typename DataType>
-    void BinaryExplicitHierarchy<DataType>::changeSon(BlockType& parent, size_t sonOrder, BlockType* newSon)
+	void BinaryExplicitHierarchy<DataType>::changeSon(BlockType& parent, size_t sonOrder, BlockType* newSon)
 	{
 		if (sonOrder == BinaryHierarchy<BlockType>::LEFT_SON_INDEX)
 		{
@@ -531,7 +552,7 @@ namespace ds::amt {
 	}
 
 	template<typename DataType>
-    void BinaryExplicitHierarchy<DataType>::removeSon(BlockType& parent, size_t sonOrder)
+	void BinaryExplicitHierarchy<DataType>::removeSon(BlockType& parent, size_t sonOrder)
 	{
 		if (sonOrder == BinaryHierarchy<BlockType>::LEFT_SON_INDEX)
 		{
@@ -543,44 +564,44 @@ namespace ds::amt {
 		}
 	}
 
-    template <typename DataType>
-    auto BinaryExplicitHierarchy<DataType>::accessLeftSon(const BlockType& node) const -> BlockType*
-    {
-	    return node.left_;
-	}
-
-    template <typename DataType>
-    auto BinaryExplicitHierarchy<DataType>::accessRightSon(const BlockType& node) const -> BlockType*
+	template <typename DataType>
+	auto BinaryExplicitHierarchy<DataType>::accessLeftSon(const BlockType& node) const -> BlockType*
 	{
-	    return node.right_;
+		return node.left_;
 	}
 
-    template <typename DataType>
-    bool BinaryExplicitHierarchy<DataType>::isLeftSon(const BlockType& node) const
+	template <typename DataType>
+	auto BinaryExplicitHierarchy<DataType>::accessRightSon(const BlockType& node) const -> BlockType*
+	{
+		return node.right_;
+	}
+
+	template <typename DataType>
+	bool BinaryExplicitHierarchy<DataType>::isLeftSon(const BlockType& node) const
 	{
 		return node.parent_ != nullptr && this->accessLeftSon(*this->accessParent(node)) == &node;
 	}
 
-    template <typename DataType>
-    bool BinaryExplicitHierarchy<DataType>::isRightSon(const BlockType& node) const
+	template <typename DataType>
+	bool BinaryExplicitHierarchy<DataType>::isRightSon(const BlockType& node) const
 	{
 		return node.parent_ != nullptr && this->accessRightSon(*this->accessParent(node)) == &node;
 	}
 
-    template <typename DataType>
-    bool BinaryExplicitHierarchy<DataType>::hasLeftSon(const BlockType& node) const
+	template <typename DataType>
+	bool BinaryExplicitHierarchy<DataType>::hasLeftSon(const BlockType& node) const
 	{
-	    return node.left_ != nullptr;
+		return node.left_ != nullptr;
 	}
 
-    template <typename DataType>
-    bool BinaryExplicitHierarchy<DataType>::hasRightSon(const BlockType& node) const
+	template <typename DataType>
+	bool BinaryExplicitHierarchy<DataType>::hasRightSon(const BlockType& node) const
 	{
-	    return node.right_ != nullptr;
+		return node.right_ != nullptr;
 	}
 
-    template<typename DataType>
-    auto BinaryExplicitHierarchy<DataType>::insertLeftSon(BlockType& parent) -> BlockType&
+	template<typename DataType>
+	auto BinaryExplicitHierarchy<DataType>::insertLeftSon(BlockType& parent) -> BlockType&
 	{
 		BlockType* newSon = AbstractMemoryStructure<BlockType>::memoryManager_->allocateMemory();
 		parent.left_ = newSon;
@@ -589,7 +610,7 @@ namespace ds::amt {
 	}
 
 	template<typename DataType>
-    auto BinaryExplicitHierarchy<DataType>::insertRightSon(BlockType& parent) -> BlockType&
+	auto BinaryExplicitHierarchy<DataType>::insertRightSon(BlockType& parent) -> BlockType&
 	{
 		BlockType* newSon = AbstractMemoryStructure<BlockType>::memoryManager_->allocateMemory();
 		parent.right_ = newSon;
@@ -598,7 +619,7 @@ namespace ds::amt {
 	}
 
 	template<typename DataType>
-    void BinaryExplicitHierarchy<DataType>::changeLeftSon(BlockType& parent, BlockType* newSon)
+	void BinaryExplicitHierarchy<DataType>::changeLeftSon(BlockType& parent, BlockType* newSon)
 	{
 		BlockType* oldSon = parent.left_;
 		parent.left_ = newSon;
@@ -607,7 +628,7 @@ namespace ds::amt {
 	}
 
 	template<typename DataType>
-    void BinaryExplicitHierarchy<DataType>::changeRightSon(BlockType& parent, BlockType* newSon)
+	void BinaryExplicitHierarchy<DataType>::changeRightSon(BlockType& parent, BlockType* newSon)
 	{
 		BlockType* oldSon = parent.right_;
 		parent.right_ = newSon;
@@ -616,7 +637,7 @@ namespace ds::amt {
 	}
 
 	template<typename DataType>
-    void BinaryExplicitHierarchy<DataType>::removeLeftSon(BlockType& parent)
+	void BinaryExplicitHierarchy<DataType>::removeLeftSon(BlockType& parent)
 	{
 		BlockType* removedSon = parent.left_;
 
@@ -629,7 +650,7 @@ namespace ds::amt {
 	}
 
 	template<typename DataType>
-    void BinaryExplicitHierarchy<DataType>::removeRightSon(BlockType& parent)
+	void BinaryExplicitHierarchy<DataType>::removeRightSon(BlockType& parent)
 	{
 		BlockType* removedSon = parent.right_;
 
