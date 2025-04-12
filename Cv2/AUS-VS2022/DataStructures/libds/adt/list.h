@@ -134,9 +134,23 @@ namespace ds::adt {
     template<typename T, typename SequenceType>
     size_t GeneralList<T, SequenceType>::calculateIndex(T element)
     {
-        // TODO 08
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        int result = 0;
+        decltype(auto) block = this->getSequence()->findBlockWithProperty(
+            [] (SequenceType* block)
+            {
+                if (block->data_ == element)
+                {
+                    return true;
+                }
+                result++;
+                return false;
+            } 
+        );
+        if (block != nullptr)
+        {
+            return result;
+        }
+        return INVALID_INDEX;
     }
 
     template<typename T, typename SequenceType>
@@ -164,9 +178,13 @@ namespace ds::adt {
     template<typename T, typename SequenceType>
     T GeneralList<T, SequenceType>::access(size_t index)
     {
-        // TODO 08
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+		
+        amt::MemoryBlock<T>* block = this->getSequence()->access(index);
+        if (block == nullptr)
+        {
+            throw std::out_of_range("Invalid index!");
+        }
+        return block->data_;
     }
 
     template<typename T, typename SequenceType>
@@ -188,9 +206,12 @@ namespace ds::adt {
     template<typename T, typename SequenceType>
     void GeneralList<T, SequenceType>::insert(T element, size_t index)
     {
-        // TODO 08
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+	    if (index < 0 || index > this->size())
+	    {
+            throw std::out_of_range("Invalid index");
+	    }
+        amt::MemoryBlock<T>& block = this->getSequence()->insert(index);
+        block.data_ = element;
     }
 
     template<typename T, typename SequenceType>

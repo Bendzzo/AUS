@@ -197,9 +197,11 @@ namespace ds::adt {
     template<typename T>
     T Array<T>::access(long long index) const
     {
-        // TODO 08
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        if (!this->validateIndex(index))
+        {
+            throw std::out_of_range("Invalid index!");
+        }
+        return this->getSequence()->access(this->mapIndex(index))->data_;
     }
 
     template<typename T>
@@ -235,20 +237,15 @@ namespace ds::adt {
     template<typename T>
     bool Array<T>::validateIndex(long long index) const
     {
-        // TODO 08
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        return index >= base_ && index < base_ + static_cast<long long> (this->size());
     }
 
     template<typename T>
     size_t Array<T>::mapIndex(long long index) const
     {
-        // TODO 08
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        return index - base_;
     }
 
-    //----------
 
     template<typename T>
     CompactMatrix<T>::CompactMatrix(size_t size1, size_t size2) :
