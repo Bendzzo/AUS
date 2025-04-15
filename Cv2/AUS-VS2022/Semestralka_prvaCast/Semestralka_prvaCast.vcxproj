@@ -130,12 +130,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Semestralka.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="GRT_Stops.csv" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FilterAlgorithm.h" />
+    <ClInclude Include="Semestralka.h" />
     <ClInclude Include="Vrchol.h" />
     <ClInclude Include="Zastavka.h" />
   </ItemGroup>
