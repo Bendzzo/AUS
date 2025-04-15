@@ -136,6 +136,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FilterAlgorithm.h" />
+    <ClInclude Include="Vrchol.h" />
     <ClInclude Include="Zastavka.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -17,7 +17,7 @@ void vypisVsetkyZastavky(const vector<Zastavka>& zastavkyNaVypis) {
 	cout << "Celkovy pocet zastavok: " << zastavkyNaVypis.size() << endl;
 }
 
-void zobrazMenu() {
+void zobrazMenuPrvaCast() {
     FilterAlgorithm<vector<Zastavka>::iterator, vector<Zastavka>> filter;
 
     int volba;
@@ -48,7 +48,7 @@ void zobrazMenu() {
             //isInMunicipality funkcia
             auto municipalityPredicate = [vstup](const Zastavka& z) -> bool {
                 return z.obec == vstup;
-                };
+            };
 
             filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, municipalityPredicate);
 
@@ -64,7 +64,7 @@ void zobrazMenu() {
             //isOnStreet funkcia
             auto streetPredicate = [vstup](const Zastavka& z) -> bool {
                 return z.ulica.find(vstup) != string::npos;
-                };
+            };
 
             filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, streetPredicate);
 
@@ -88,7 +88,7 @@ void zobrazMenu() {
             auto regionPredicate = [minLat, maxLat, minLong, maxLong](const Zastavka& z) -> bool {
                 return z.latitude >= minLat && z.latitude <= maxLat &&
                     z.longitude >= minLong && z.longitude <= maxLong;
-                };
+            };
 
             filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, regionPredicate);
 
@@ -173,6 +173,6 @@ void nacitajVsetkyZastavky(string nazovSuboru)
 
 int main() {
     nacitajVsetkyZastavky("GRT_Stops.csv");
-    zobrazMenu();
+    zobrazMenuPrvaCast();
     return 0;
 }
