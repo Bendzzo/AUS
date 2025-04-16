@@ -23,4 +23,13 @@ public:
     const std::string& getNazov() const { return nazov; }
     Zastavka* getZastavka() const { return zastavka; }
     TypVrcholu getTyp() const { return typ; }
+
+    bool operator==(const Vrchol& other) const
+    {
+	    if (nazov == other.nazov && zastavka == other.zastavka)
+	    {
+            return true;
+	    }
+        return false;
+    }
 };
