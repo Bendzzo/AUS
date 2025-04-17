@@ -20,6 +20,18 @@ void vypisVsetkyVrcholy(const vector<Vrchol>& zastavkyNaVypis) {
     cout << "Celkovy pocet zastavok: " << zastavkyNaVypis.size() << endl;
 }
 
+void Semestralka::vypisZastavkuSNazvom(string nazov)
+{
+	for (auto zastavka : this->zastavky)
+	{
+		if (zastavka.ulica == nazov)
+		{
+            zastavka.vypis();
+            return;
+		}
+	}
+}
+
 void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
 {
     koren_ = &this->hierarchiaZastavok.emplaceRoot();
@@ -98,7 +110,7 @@ void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
         //getline(inputString, aktualnaZastavka.obec);
 
         zastavky.push_back(aktualnaZastavka);
-        Zastavka* zastavkaPtr = &zastavky.back();
+        Zastavka* zastavkaPtr = &aktualnaZastavka;
 
         if (aktualnaZastavka.obec != poslednaObec)
         {
@@ -248,6 +260,8 @@ void Semestralka::vypisSynov(BlokHierarchie& vrchol)
     }
 }
 
+
+
 void Semestralka::zobrazMenuDruhaCast()
 {
     int volba;
@@ -277,9 +291,9 @@ void Semestralka::zobrazMenuDruhaCast()
 
         cout << "1. Prejst na nadradenu uroven" << endl;
         cout << "2. Vybrat syna" << endl;
-        cout << "3. Filtrovat zastavky - podla zemepisnej dlzky" << endl;
-        cout << "4. Filtrovat zastavky - podla obce" << endl;
-        cout << "5. Filtrovat zastavky - podla ulice obsahujucej text" << endl;
+        cout << "3. Filtrovat podla zemepisnej dlzky" << endl;
+        cout << "4. Filtrovat podla obce" << endl;
+        cout << "5. Filtrovat podla ulice obsahujucej text" << endl;
         cout << "0. Navrat do hlavneho menu" << endl;
         cout << "=========================================" << endl;
         cout << "Zadajte cislo volby: ";
@@ -393,12 +407,20 @@ void Semestralka::zobrazMenuDruhaCast()
 
                 if ((vrchol.getTyp() == TypVrcholu::ULICA && vrchol.getNazov().find(hladanyText) != string::npos)) {
                     vrcholy.push_back(vrchol);
-                    vypisSynov(this->hierarchiaZastavok.accessSon(aktualnaPozicia, index));
+                    auto syn = this->hierarchiaZastavok.accessSon(*aktualnaPozicia, index);
+                    //vypisSynov(*syn);
+                    if (syn != NULL)
+                    {
+                        vypisZastavkuSNazvom(syn->data_.getNazov());
+                    }
+
+                    //cout << this->hierarchiaZastavok.degree(*syn) << endl;
                 }
+                
             }
 
-            cout << "\nZastavky na ulici obsahujucej '" << hladanyText << "':" << endl;
-            vypisVsetkyVrcholy(vrcholy);
+            /*cout << "\nZastavky na ulici obsahujucej '" << hladanyText << "':" << endl;
+            vypisVsetkyVrcholy(vrcholy);*/
             break;
         }
 
@@ -408,3 +430,4 @@ void Semestralka::zobrazMenuDruhaCast()
         }
     }
 }
+

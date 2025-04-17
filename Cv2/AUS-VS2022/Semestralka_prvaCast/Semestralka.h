@@ -25,4 +25,6 @@ public:
    void zobrazMenuDruhaCast();  
    void vypisVsetkyZastavky(const std::vector<Zastavka>& zastavkyNaVypis);
    void vypisSynov(BlokHierarchie& vrchol);
+   void vypisZastavkuSNazvom(string nazov);
+   //vector<Zastavka> getSynSov(BlokHierarchie& vrchol);
 };
