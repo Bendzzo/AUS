@@ -460,9 +460,19 @@ namespace ds::adt {
     template<typename P, typename T>
     void BinaryHeap<P, T>::push(P priority, T data)
     {
-        // TODO 09
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        PriorityQueue<P, T>& item = this->getHierarchy()->insertLastLeaf().data_;
+        item.priority = priority;
+        item.data_ = data;
+
+        auto* parentNode = this->getHierarchy()->accessLastLeaf();
+        auto* parent = this->getHierarchy()->accessParent(*current);
+
+        while (parent != nullptr && current->data_.priority < parent.data_.priority)
+        {
+            std::swap(current->data_, parent->data_);
+            current = parent;
+            parent = this->getHierarchy()->accessParent(*current);
+        }
     }
 
     template<typename P, typename T>

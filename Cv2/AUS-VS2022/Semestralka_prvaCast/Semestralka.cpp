@@ -22,14 +22,16 @@ void vypisVsetkyVrcholy(const vector<Vrchol>& zastavkyNaVypis) {
 
 void Semestralka::vypisZastavkuSNazvom(string nazov)
 {
+    int i = 0;
 	for (auto zastavka : this->zastavky)
 	{
-		if (zastavka.ulica == nazov)
+		if (zastavka.ulica.find(nazov) != string::npos)
 		{
             zastavka.vypis();
-            return;
+            i++;
 		}
 	}
+    cout << "Pocet zastavok " << i;
 }
 
 void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
@@ -411,7 +413,8 @@ void Semestralka::zobrazMenuDruhaCast()
                     //vypisSynov(*syn);
                     if (syn != NULL)
                     {
-                        vypisZastavkuSNazvom(syn->data_.getNazov());
+                        //cout << hladanyText << endl;
+                        vypisZastavkuSNazvom(hladanyText);
                     }
 
                     //cout << this->hierarchiaZastavok.degree(*syn) << endl;
