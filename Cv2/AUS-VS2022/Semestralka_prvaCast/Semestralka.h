@@ -5,14 +5,16 @@
 #include "Zastavka.h"  
 
 using ViacCestnaHierarchia = ds::amt::MultiWayExplicitHierarchy<Vrchol>;  
-using BlokHierarchie = ds::amt::MultiWayExplicitHierarchyBlock<Vrchol>;  
+using BlokHierarchie = ds::amt::MultiWayExplicitHierarchyBlock<Vrchol>;
+using IteratorHierarchie = ds::amt::Hierarchy<ds::amt::MultiWayExplicitHierarchyBlock<Vrchol>>::PreOrderHierarchyIterator;
 
 class Semestralka  
 {  
    ViacCestnaHierarchia hierarchiaZastavok;  
    BlokHierarchie* koren_;  
    std::vector<Zastavka> zastavky;  
-   std::vector<Zastavka> filtrovaneZastavky;  
+   std::vector<Zastavka> filtrovaneZastavky;
+	
 
 public:  
    Semestralka(std::vector<Zastavka>& zastavky, std::vector<Zastavka>& filtrovaneZastavky)  
@@ -21,5 +23,6 @@ public:
    void nacitajVsetkyZastavky(std::string nazovSuboru);  
    void zobrazMenuPrvaCast();  
    void zobrazMenuDruhaCast();  
-   void vypisVsetkyZastavky(const std::vector<Zastavka>& zastavkyNaVypis);  
+   void vypisVsetkyZastavky(const std::vector<Zastavka>& zastavkyNaVypis);
+   void vypisSynov(BlokHierarchie& vrchol);
 };

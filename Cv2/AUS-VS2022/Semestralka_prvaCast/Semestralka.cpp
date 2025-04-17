@@ -7,19 +7,36 @@
 #include "Semestralka.h"
 
 void Semestralka::vypisVsetkyZastavky(const vector<Zastavka>& zastavkyNaVypis) {
-	for (const auto& zastavka : zastavkyNaVypis) {
-		zastavka.vypis();
-	}
-	cout << "Celkovy pocet zastavok: " << zastavkyNaVypis.size() << endl;
+    for (const auto& zastavka : zastavkyNaVypis) {
+        zastavka.vypis();
+    }
+    cout << "Celkovy pocet zastavok: " << zastavkyNaVypis.size() << endl;
+}
+
+void vypisVsetkyVrcholy(const vector<Vrchol>& zastavkyNaVypis) {
+    for (const auto& vrchol : zastavkyNaVypis) {
+        cout << vrchol.getNazov() << endl;
+    }
+    cout << "Celkovy pocet zastavok: " << zastavkyNaVypis.size() << endl;
 }
 
 void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
 {
     koren_ = &this->hierarchiaZastavok.emplaceRoot();
-    BlokHierarchie* obec = nullptr;
+    koren_->data_ = Vrchol();
+
+    BlokHierarchie* aktualnaObecNode = nullptr;
+    BlokHierarchie* aktualnaUlicaNode = nullptr;
+    string poslednaObec = "";
+    string poslednaUlica = "";
 
     ifstream subor;
     subor.open(nazovSuboru);
+    if (!subor.is_open()) {
+        cerr << "Nepodarilo sa otvorit subor " << nazovSuboru << "\n";
+        return;
+    }
+
     string line;
 
     getline(subor, line);
@@ -27,28 +44,28 @@ void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
     int riadok = 0;
     while (getline(subor, line))
     {
-        Zastavka zastavka;
+        Zastavka aktualnaZastavka;
         string tempString;
         stringstream inputString(line);
 
         // StopID
         getline(inputString, tempString, ';');
-        zastavka.id = stoi(tempString);
+        aktualnaZastavka.id = stoi(tempString);
 
         // Street
-        getline(inputString, zastavka.ulica, ';');
+        getline(inputString, aktualnaZastavka.ulica, ';');
 
         // Longitude
         getline(inputString, tempString, ';');
         if (!tempString.empty())
         {
-            zastavka.longitude = stod(tempString);
+            aktualnaZastavka.longitude = stod(tempString);
 
         }
         else
         {
             //zastavka.vypis();
-            zastavka.longitude = 1000000.0;
+            aktualnaZastavka.longitude = 1000000.0;
         }
 
         // Latitude
@@ -56,26 +73,73 @@ void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
         getline(inputString, tempString, ';');
         if (!tempString.empty())
         {
-            zastavka.latitude = stod(tempString);
+            aktualnaZastavka.latitude = stod(tempString);
 
         }
         else
         {
             //zastavka.vypis();
-            zastavka.latitude = 1000000.0;
+            aktualnaZastavka.latitude = 1000000.0;
         }
 
         // Municipality
-        getline(inputString, zastavka.obec);
+        tempString = "";
+        getline(inputString, tempString, ';');
+        if (!tempString.empty())
+        {
+            aktualnaZastavka.obec = tempString;
 
-        zastavky.push_back(zastavka);
+        }
+        else
+        {
+            //zastavka.vypis();
+            aktualnaZastavka.obec = "ChybaNazov";
+        }
+        //getline(inputString, aktualnaZastavka.obec);
 
+        zastavky.push_back(aktualnaZastavka);
+        Zastavka* zastavkaPtr = &zastavky.back();
+
+        if (aktualnaZastavka.obec != poslednaObec)
+        {
+            aktualnaObecNode = &this->hierarchiaZastavok.emplaceSon(*koren_, this->hierarchiaZastavok.degree(*koren_));
+            aktualnaObecNode->data_ = Vrchol(aktualnaZastavka.obec, TypVrcholu::OBEC, nullptr);
+
+            poslednaObec = aktualnaZastavka.obec;
+            poslednaUlica = "";
+            aktualnaUlicaNode = nullptr;
+        }
+
+        if (aktualnaZastavka.ulica != poslednaUlica)
+        {
+            aktualnaUlicaNode = &this->hierarchiaZastavok.emplaceSon(*aktualnaObecNode, this->hierarchiaZastavok.degree(*aktualnaObecNode));
+            aktualnaUlicaNode->data_ = Vrchol(aktualnaZastavka.ulica, TypVrcholu::ULICA, nullptr);
+
+            poslednaUlica = aktualnaZastavka.ulica;
+        }
+
+        if (aktualnaUlicaNode != nullptr)
+        {
+            string idZastavky = to_string(aktualnaZastavka.id);
+            BlokHierarchie& listovyVrchol = hierarchiaZastavok.emplaceSon(*aktualnaUlicaNode,
+                this->hierarchiaZastavok.degree(*aktualnaUlicaNode));
+            listovyVrchol.data_ = Vrchol(idZastavky, TypVrcholu::ZASTAVKA, zastavkaPtr);
+        }
+        else
+        {
+            cerr << "Vrchol ulice je nullptr " << "\n";
+        }
 
         /*cout << riadok++ << " ";
         zastavka.vypis();*/
 
     }
     subor.close();
+    //cout << "Hierarchia nacitana.\n Pocet vrcholov: " << this->hierarchiaZastavok.size() << endl;
+    //cout << this->hierarchiaZastavok.degree(*koren_);
+    //cout << this->hierarchiaZastavok.degree(*this->hierarchiaZastavok.accessSon(*koren_, 4));
+    //cout << this->hierarchiaZastavok.accessSon(*koren_, 4)->data_.getNazov();
+    //vypisSynov(*koren_);
 }
 
 
@@ -101,18 +165,19 @@ void Semestralka::zobrazMenuPrvaCast() {
 
         switch (volba) {
         case 0:
+            cout << "Koniec programu." << endl;
             return;
 
         case 1: {
-            cout << "Zadajte nazov obce: ";
+            cout << "Zadajte nazov obce: \n";
             getline(cin, vstup);
 
             //isInMunicipality funkcia
-            auto municipalityPredicate = [vstup](const Zastavka& z) -> bool {
+            auto obecPredikat = [vstup](const Zastavka& z) -> bool {
                 return z.obec == vstup;
                 };
 
-            filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, municipalityPredicate);
+            filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, obecPredikat);
 
             cout << "Zastavky v obci " << vstup << ":" << endl;
             vypisVsetkyZastavky(filtrovaneZastavky);
@@ -120,15 +185,15 @@ void Semestralka::zobrazMenuPrvaCast() {
         }
 
         case 2: {
-            cout << "Zadajte nazov ulice: ";
+            cout << "Zadajte nazov ulice: \n";
             getline(cin, vstup);
 
             //isOnStreet funkcia
-            auto streetPredicate = [vstup](const Zastavka& z) -> bool {
+            auto ulicaPredikat = [vstup](const Zastavka& z) -> bool {
                 return z.ulica.find(vstup) != string::npos;
                 };
 
-            filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, streetPredicate);
+            filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, ulicaPredikat);
 
             cout << "Zastavky na ulici " << vstup << ":" << endl;
             vypisVsetkyZastavky(filtrovaneZastavky);
@@ -137,22 +202,22 @@ void Semestralka::zobrazMenuPrvaCast() {
 
         case 3: {
             double minLat, maxLat, minLong, maxLong;
-            cout << "Zadajte minimálnu zemepisnú šírku (latitude): ";
+            cout << "Zadajte minimalnu zemepisnu sirku (latitude): \n";
             cin >> minLat;
-            cout << "Zadajte maximálnu zemepisnú šírku (latitude): ";
+            cout << "Zadajte maximalnu zemepisnu sirku (latitude): \n";
             cin >> maxLat;
-            cout << "Zadajte minimálnu zemepisnú dĺžku (longitude): ";
+            cout << "Zadajte minimalnu zemepisnu dlzku (longitude): \n";
             cin >> minLong;
-            cout << "Zadajte maximálnu zemepisnú dĺžku (longitude): ";
+            cout << "Zadajte maximalnu zemepisnu dlzku (longitude): \n";
             cin >> maxLong;
 
             //isInRegion funkcia
-            auto regionPredicate = [minLat, maxLat, minLong, maxLong](const Zastavka& z) -> bool {
+            auto isInRegionPredikat = [minLat, maxLat, minLong, maxLong](const Zastavka& z) -> bool {
                 return z.latitude >= minLat && z.latitude <= maxLat &&
                     z.longitude >= minLong && z.longitude <= maxLong;
                 };
 
-            filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, regionPredicate);
+            filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, isInRegionPredikat);
 
             cout << "Zastavky v zadanej geografickej oblasti:" << endl;
             vypisVsetkyZastavky(filtrovaneZastavky);
@@ -160,12 +225,12 @@ void Semestralka::zobrazMenuPrvaCast() {
         }
 
         case 4:
-            cout << "Všetky zastavky:" << endl;
+            cout << "Vsetky zastavky:" << endl;
             vypisVsetkyZastavky(zastavky);
             break;
 
         default:
-            cout << "Neplatná voľba. Skúste znova." << endl;
+            cout << "Neplatna volba. Skuste znova." << endl;
         }
 
 
@@ -173,130 +238,173 @@ void Semestralka::zobrazMenuPrvaCast() {
     }
 }
 
+void Semestralka::vypisSynov(BlokHierarchie& vrchol)
+{
+    cout << "Synovia vrchola " << vrchol.data_.getNazov() << " \n";
+    for (size_t i = 0; i < this->hierarchiaZastavok.degree(vrchol); ++i)
+    {
+        auto syn = this->hierarchiaZastavok.accessSon(vrchol, i);
+        cout << "[" << i << "] " << syn->data_.getNazov() << endl;
+    }
+}
+
 void Semestralka::zobrazMenuDruhaCast()
 {
-    HierarchiaZastavok hierarchiaZastavok;
-    hierarchiaZastavok.vytvorHierarchiu(zastavky);
-
-    // Vytvor iterátor nad hierarchiou
-    HierarchiaIterator iterator(&hierarchiaZastavok);
-
     int volba;
-    std::string vstup;
+    string vstup;
+    BlokHierarchie* aktualnaPozicia = koren_;
+    FilterAlgorithm<vector<Zastavka>::iterator, vector<Zastavka>> filter;
+
+    std::vector<Vrchol> vrcholy;
 
     while (true) {
-        std::cout << "\n========== MENU DRUHEJ ÚROVNE ==========" << std::endl;
-        std::cout << "Aktuálna pozícia: " << iterator.getAktualnyVrchol().getNazov() << std::endl;
-        std::cout << "Typ: ";
+        IteratorHierarchie zaciatok(&this->hierarchiaZastavok, aktualnaPozicia);
+        vrcholy.clear();
 
-        if (iterator.getAktualnyVrchol().jeKoren()) {
-            std::cout << "Dopravca (koreň)" << std::endl;
+        cout << "\n========== MENU DRUHEJ UROVNE ==========" << endl;
+        cout << "Aktualna pozicia: " << aktualnaPozicia->data_.getNazov() << endl;
+        cout << "Typ: ";
+
+        if (aktualnaPozicia->data_.getTyp() == TypVrcholu::DOPRAVCA) {
+            cout << "Dopravca (koren)" << endl;
         }
-        else if (iterator.getAktualnyVrchol().jeObec()) {
-            std::cout << "Obec" << std::endl;
+        else if (aktualnaPozicia->data_.getTyp() == TypVrcholu::OBEC) {
+            cout << "Obec" << endl;
         }
-        else if (iterator.getAktualnyVrchol().jeUlica()) {
-            std::cout << "Ulica" << std::endl;
+        else if (aktualnaPozicia->data_.getTyp() == TypVrcholu::ULICA) {
+            cout << "Ulica" << endl;
         }
 
-        std::cout << "1. Prejsť na nadradenú úroveň" << std::endl;
-        std::cout << "2. Vybrať syna" << std::endl;
-        std::cout << "3. Filtrovať zastávky - podľa zemepisnej dĺžky" << std::endl;
-        std::cout << "4. Filtrovať zastávky - podľa obce" << std::endl;
-        std::cout << "5. Filtrovať zastávky - podľa ulice obsahujúcej text" << std::endl;
-        std::cout << "0. Návrat do hlavného menu" << std::endl;
-        std::cout << "=========================================" << std::endl;
-        std::cout << "Zadajte číslo voľby: ";
-        std::cin >> volba;
+        cout << "1. Prejst na nadradenu uroven" << endl;
+        cout << "2. Vybrat syna" << endl;
+        cout << "3. Filtrovat zastavky - podla zemepisnej dlzky" << endl;
+        cout << "4. Filtrovat zastavky - podla obce" << endl;
+        cout << "5. Filtrovat zastavky - podla ulice obsahujucej text" << endl;
+        cout << "0. Navrat do hlavneho menu" << endl;
+        cout << "=========================================" << endl;
+        cout << "Zadajte cislo volby: ";
+        cin >> volba;
 
         // Clear input buffer
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         switch (volba) {
         case 0:
             return;
 
-        case 1: // Prejsť na nadradenú úroveň
-            if (!iterator.presunNaNadradenu()) {
-                std::cout << "Už ste na najvyššej úrovni!" << std::endl;
+        case 1:
+            if (!this->hierarchiaZastavok.accessParent(*aktualnaPozicia)) {
+                cout << "\nSte na najvyssej urovni" << endl;
+                break;
             }
+            aktualnaPozicia = this->hierarchiaZastavok.accessParent(*aktualnaPozicia);
             break;
 
-        case 2: { // Vybrať syna
-            size_t pocetSynov = iterator.getPocetSynov();
+        case 2: {
+            size_t pocetSynov = this->hierarchiaZastavok.degree(*aktualnaPozicia);
             if (pocetSynov == 0) {
-                std::cout << "Aktuálny vrchol nemá žiadnych synov!" << std::endl;
+                cout << "Vrchol je List, teda nema synov" << endl;
                 break;
             }
 
-            std::cout << "Dostupní synovia:" << std::endl;
-            for (size_t i = 0; i < pocetSynov; i++) {
-                BlokHierarchie* syn = hierarchiaZastavok.getSyn(iterator.getAktualnyBlok(), i);
-                std::cout << i << ": " << syn->data_.getNazov() << std::endl;
-            }
+            vypisSynov(*aktualnaPozicia);
 
             size_t index;
-            std::cout << "Zadajte index syna: ";
-            std::cin >> index;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cout << "Zadajte index syna: ";
+            cin >> index;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             if (index >= pocetSynov) {
-                std::cout << "Neplatný index!" << std::endl;
+                cout << "Neplatny index!" << endl;
                 break;
             }
 
-            iterator.presunNaSyna(index);
+            aktualnaPozicia = this->hierarchiaZastavok.accessSon(*aktualnaPozicia, index);
             break;
         }
 
-        case 3: { // Filtrovať podľa zemepisnej dĺžky
-            double maxLongitude;
-            std::cout << "Zadajte maximálnu zemepisnú dĺžku: ";
-            std::cin >> maxLongitude;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+   //     case 3: {
+   //         double minLat, maxLat, minLong, maxLong;
+   //         cout << "Zadajte minimalnu zemepisnu sirku (latitude): \n";
+   //         cin >> minLat;
+   //         cout << "Zadajte maximalnu zemepisnu sirku (latitude): \n";
+   //         cin >> maxLat;
+   //         cout << "Zadajte minimalnu zemepisnu dlzku (longitude): \n";
+   //         cin >> minLong;
+   //         cout << "Zadajte maximalnu zemepisnu dlzku (longitude): \n";
+   //         cin >> maxLong;
 
-            auto longitudePredikat = [maxLongitude](const Zastavka& z) -> bool {
-                return z.longitude < maxLongitude;
-                };
+   //         //isInRegion funkcia
+   //         auto regionPredicate = [minLat, maxLat, minLong, maxLong](const Zastavka& z) -> bool {
+   //             return z.latitude >= minLat && z.latitude <= maxLat &&
+   //                 z.longitude >= minLong && z.longitude <= maxLong;
+   //         };
+			//for (size_t i = 0; i < this->hierarchiaZastavok.degree(*aktualnaPozicia); ++i)
+			//{
+   //             auto syn = this->hierarchiaZastavok.accessSon(*aktualnaPozicia, i)->data_.getZastavka();
+   //             vrcholy.push_back(*syn);
+			//}
 
-            auto filtrovaneZastavky = iterator.filtrujZastavkyPodlaPredikatuVPodstrome(longitudePredikat);
-            std::cout << "Zastávky so zemepisnou dĺžkou menšou ako " << maxLongitude << ":" << std::endl;
-            vypisFilterovaneZastavky(filtrovaneZastavky);
+
+   //         filter.filter(vrcholy.begin(), vrcholy.end(), filtrovaneZastavky, regionPredicate);
+
+   //         cout << "Zastavky v zadanej geografickej oblasti:" << endl;
+   //         vypisVsetkyZastavky(filtrovaneZastavky);
+   //         break;
+   //     }
+
+        /*case 4: {
+            string hladanaObec;
+            cout << "Zadajte nazov obce: ";
+            getline(cin, hladanaObec);
+
+            vrcholy.clear();
+
+            for (IteratorHierarchie it(&this->hierarchiaZastavok, aktualnaPozicia);
+                it != this->hierarchiaZastavok.end(); ++it) {
+
+                const Vrchol& vrchol = *it;
+                const Zastavka* z = vrchol.getZastavka();
+
+                if (z != nullptr && z->obec == hladanaObec) {
+                    vrcholy.push_back(*z);
+                }
+            }
+
+            cout << "Zastavky v obci '" << hladanaObec << "':" << endl;
+            vypisVsetkyZastavky(vrcholy);
+            break;
+        }*/
+
+        case 5: {
+            string hladanyText;
+            cout << "Zadajte text, ktory ma byt obsiahnuty v nazve ulice: ";
+            getline(cin, hladanyText);
+
+            vrcholy.clear();
+
+            int index = 0;
+            for (IteratorHierarchie it(&this->hierarchiaZastavok, aktualnaPozicia);
+                it != this->hierarchiaZastavok.end(); ++it) {
+                index++;
+                Vrchol& vrchol = *it;
+                const Zastavka* z = vrchol.getZastavka();
+
+
+                if ((vrchol.getTyp() == TypVrcholu::ULICA && vrchol.getNazov().find(hladanyText) != string::npos)) {
+                    vrcholy.push_back(vrchol);
+                    vypisSynov(this->hierarchiaZastavok.accessSon(aktualnaPozicia, index));
+                }
+            }
+
+            cout << "\nZastavky na ulici obsahujucej '" << hladanyText << "':" << endl;
+            vypisVsetkyVrcholy(vrcholy);
             break;
         }
 
-        case 4: { // Filtrovať podľa obce
-            std::string hladanaObec;
-            std::cout << "Zadajte názov obce: ";
-            std::getline(std::cin, hladanaObec);
-
-            auto obecPredikat = [hladanaObec](const Zastavka& z) -> bool {
-                return z.obec == hladanaObec;
-                };
-
-            auto filtrovaneZastavky = iterator.filtrujZastavkyPodlaPredikatuVPodstrome(obecPredikat);
-            std::cout << "Zastávky v obci " << hladanaObec << ":" << std::endl;
-            vypisFilterovaneZastavky(filtrovaneZastavky);
-            break;
-        }
-
-        case 5: { // Filtrovať podľa ulice obsahujúcej text
-            std::string hladanyText;
-            std::cout << "Zadajte text, ktorý má byť obsiahnutý v názve ulice: ";
-            std::getline(std::cin, hladanyText);
-
-            auto ulicaPredikat = [hladanyText](const Zastavka& z) -> bool {
-                return z.ulica.find(hladanyText) != std::string::npos;
-                };
-
-            auto filtrovaneZastavky = iterator.filtrujZastavkyPodlaPredikatuVPodstrome(ulicaPredikat);
-            std::cout << "Zastávky na ulici obsahujúcej '" << hladanyText << "':" << std::endl;
-            vypisFilterovaneZastavky(filtrovaneZastavky);
-            break;
-        }
 
         default:
-            std::cout << "Neplatná voľba. Skúste znova." << std::endl;
+            cout << "Neplatna volba. Skuste znova." << endl;
         }
     }
 }

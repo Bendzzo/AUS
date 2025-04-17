@@ -7,6 +7,7 @@ int main() {
     Semestralka semestralka(zastavky, filtrovaneZastavky);
 
     semestralka.nacitajVsetkyZastavky("GRT_Stops.csv");
-    semestralka.zobrazMenuPrvaCast();
+    /*semestralka.zobrazMenuPrvaCast();*/
+    semestralka.zobrazMenuDruhaCast();
     return 0;
 }

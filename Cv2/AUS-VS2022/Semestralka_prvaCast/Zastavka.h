@@ -17,4 +17,14 @@ struct Zastavka {
         cout << "Obec: " << obec << endl;
         cout << "------------------------" << endl;
     }
+
+    Zastavka* getZastavka()
+    {
+        return this;
+    }
+public:
+    string getUlica()
+    {
+        return ulica;
+    }
 };
