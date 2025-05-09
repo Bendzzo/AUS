@@ -158,7 +158,6 @@ void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
 
 
 void Semestralka::zobrazMenuPrvaCast() {
-    FilterAlgorithm<vector<Zastavka>::iterator, vector<Zastavka>> filter;
 
     int volba;
     string vstup;
@@ -189,9 +188,13 @@ void Semestralka::zobrazMenuPrvaCast() {
             //isInMunicipality funkcia
             auto obecPredikat = [vstup](const Zastavka& z) -> bool {
                 return z.obec == vstup;
-                };
+            };
 
-            filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, obecPredikat);
+            Algoritmus::algoritmus(zastavky.begin(), zastavky.end(), obecPredikat, [&](const Zastavka& z)
+                {
+                    
+                });
+            //filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, obecPredikat);
 
             cout << "Zastavky v obci " << vstup << ":" << endl;
             vypisVsetkyZastavky(filtrovaneZastavky);
