@@ -19,7 +19,7 @@ void vypisVsetkyVrcholy(const vector<Vrchol>& zastavkyNaVypis) {
     for (const auto& vrchol : zastavkyNaVypis) {
         cout << vrchol.getNazov() << endl;
     }
-    cout << "Celkovy pocet zastavok: " << zastavkyNaVypis.size() << endl;
+    cout << "Celkovy pocet Vrcholov: " << zastavkyNaVypis.size() << endl;
 }
 
 void Semestralka::vypisZastavkuSNazvom(string nazov)
@@ -80,7 +80,7 @@ void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
         }
         else
         {
-            //zastavka.vypis();
+            //zastavkaPtr.vypis();
             aktualnaZastavka.longitude = 1000000.0;
         }
 
@@ -94,7 +94,7 @@ void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
         }
         else
         {
-            //zastavka.vypis();
+            //zastavkaPtr.vypis();
             aktualnaZastavka.latitude = 1000000.0;
         }
 
@@ -108,13 +108,13 @@ void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
         }
         else
         {
-            //zastavka.vypis();
+            //zastavkaPtr.vypis();
             aktualnaZastavka.obec = "ChybaNazov";
         }
         //getline(inputString, aktualnaZastavka.obec);
 
         zastavky.push_back(aktualnaZastavka);
-        Zastavka* zastavkaPtr = &aktualnaZastavka;
+        Zastavka* zastavkaPtr = &zastavky.back();
 
         if (aktualnaZastavka.obec != poslednaObec)
         {
@@ -147,7 +147,7 @@ void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
         }
 
         /*cout << riadok++ << " ";
-        zastavka.vypis();*/
+        zastavkaPtr.vypis();*/
 
     }
     subor.close();
@@ -293,6 +293,7 @@ void Semestralka::zobrazMenuDruhaCast()
     while (true) {
         IteratorHierarchie zaciatok(&this->hierarchiaZastavok, aktualnaPozicia);
         vrcholy.clear();
+        std::vector<Zastavka> filtrovaneZastavkyPreVypis;
 
         cout << "\n========== MENU DRUHEJ UROVNE ==========" << endl;
         cout << "Aktualna pozicia: " << aktualnaPozicia->data_.getNazov() << endl;
@@ -321,6 +322,7 @@ void Semestralka::zobrazMenuDruhaCast()
         // Clear input buffer
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
+        //ds::amt::ImplicitSequence<Vrchol*> filtrovaneVrcholy;
         switch (volba) {
         case 0:
             return;
@@ -356,35 +358,39 @@ void Semestralka::zobrazMenuDruhaCast()
             break;
         }
 
-   //     case 3: {
-   //         double minLat, maxLat, minLong, maxLong;
-   //         cout << "Zadajte minimalnu zemepisnu sirku (latitude): \n";
-   //         cin >> minLat;
-   //         cout << "Zadajte maximalnu zemepisnu sirku (latitude): \n";
-   //         cin >> maxLat;
-   //         cout << "Zadajte minimalnu zemepisnu dlzku (longitude): \n";
-   //         cin >> minLong;
-   //         cout << "Zadajte maximalnu zemepisnu dlzku (longitude): \n";
-   //         cin >> maxLong;
+        case 3: {
+            vrcholy.clear();
+            IteratorHierarchie begin(&this->hierarchiaZastavok, aktualnaPozicia);
 
-   //         //isInRegion funkcia
-   //         auto regionPredicate = [minLat, maxLat, minLong, maxLong](const Zastavka& z) -> bool {
-   //             return z.latitude >= minLat && z.latitude <= maxLat &&
-   //                 z.longitude >= minLong && z.longitude <= maxLong;
-   //         };
-			//for (size_t i = 0; i < this->hierarchiaZastavok.degree(*aktualnaPozicia); ++i)
-			//{
-   //             auto syn = this->hierarchiaZastavok.accessSon(*aktualnaPozicia, i)->data_.getZastavka();
-   //             vrcholy.push_back(*syn);
-			//}
+            double minLat, maxLat, minLong, maxLong;
+            cout << "Zadajte minimalnu zemepisnu sirku (latitude): \n";
+            cin >> minLat;
+            cout << "Zadajte maximalnu zemepisnu sirku (latitude): \n";
+            cin >> maxLat;
+            cout << "Zadajte minimalnu zemepisnu dlzku (longitude): \n";
+            cin >> minLong;
+            cout << "Zadajte maximalnu zemepisnu dlzku (longitude): \n";
+            cin >> maxLong;
 
+            // isInRegion funkcia
+            auto isInRegionPredikat = [minLat, maxLat, minLong, maxLong](const Vrchol& v) -> bool {
 
-   //         filter.filter(vrcholy.begin(), vrcholy.end(), filtrovaneZastavky, regionPredicate);
+                return v.getZastavka() != nullptr && v.getZastavka()->latitude >= minLat && 
+                    v.getZastavka()->latitude <= maxLat && v.getZastavka()->longitude >= minLong && 
+                    v.getZastavka()->longitude <= maxLong;
+            };
 
-   //         cout << "Zastavky v zadanej geografickej oblasti:" << endl;
-   //         vypisVsetkyZastavky(filtrovaneZastavky);
-   //         break;
-   //     }
+            auto pridajDoVysledku = [&vrcholy](Vrchol& v) {
+                //filtrovaneVrcholy.insertLast().data_ = &v;
+                vrcholy.push_back(v);
+                //v.getZastavka()->vypis();
+            };
+
+            Algoritmus::algoritmus(begin, this->hierarchiaZastavok.end(), isInRegionPredikat, pridajDoVysledku);
+
+            vypisVsetkyVrcholy(vrcholy);
+            break;
+        }
 
         /*case 4: {
             string hladanaObec;
@@ -408,41 +414,90 @@ void Semestralka::zobrazMenuDruhaCast()
             vypisVsetkyZastavky(vrcholy);
             break;
         }*/
+        case 4: {
+            std::string obecNazov;
+            std::cout << "Zadajte nazov obce: ";
+            getline(std::cin, obecNazov);
+            filtrovaneZastavky.clear();
+            IteratorHierarchie begin(&this->hierarchiaZastavok, aktualnaPozicia);
+
+
+            // isInMunicipality funkcia
+            auto obecPredikat = [&](const Vrchol& v) -> bool {
+                if (v.getTyp() == TypVrcholu::ZASTAVKA && v.getZastavka() != nullptr) {
+                    return v.getZastavka()->obec == obecNazov;
+                }
+                return false;
+                };
+
+        	auto pridajDoVysledku = [&filtrovaneZastavkyPreVypis](const Vrchol& v) {
+                if (v.getTyp() == TypVrcholu::ZASTAVKA && v.getZastavka() != nullptr) {
+                    filtrovaneZastavkyPreVypis.push_back(*(v.getZastavka()));
+                }
+            };
+
+            Algoritmus::algoritmus(begin, this->hierarchiaZastavok.end(), obecPredikat, pridajDoVysledku);
+            vypisVsetkyZastavky(filtrovaneZastavkyPreVypis);
+            break;
+        }
 
         case 5: {
             string hladanyText;
-            cout << "Zadajte text, ktory ma byt obsiahnuty v nazve ulice: ";
-            getline(cin, hladanyText);
+        	cout << "Zadajte text, ktory ma byt obsiahnuty v nazve ulice: ";
+        	getline(cin, hladanyText);
 
-            vrcholy.clear();
+            IteratorHierarchie begin(&this->hierarchiaZastavok, aktualnaPozicia);
 
-            int index = 0;
-            for (IteratorHierarchie it(&this->hierarchiaZastavok, aktualnaPozicia);
-                it != this->hierarchiaZastavok.end(); ++it) {
-                index++;
-                Vrchol& vrchol = *it;
-                const Zastavka* z = vrchol.getZastavka();
+            // isOnStreet funkcia
+            auto ulicaPredikat = [&hladanyText](const Vrchol& v) -> bool {
+                return v.getTyp() == TypVrcholu::ULICA && v.getNazov().find(hladanyText) != string::npos;
+            };
 
+            auto pridajDoVysledku = [&vrcholy](Vrchol& v) {
+                //filtrovaneVrcholy.insertLast().data_ = &v;
+                vrcholy.push_back(v);
+                v.getZastavka()->vypis();
+            };
 
-                if ((vrchol.getTyp() == TypVrcholu::ULICA && vrchol.getNazov().find(hladanyText) != string::npos)) {
-                    vrcholy.push_back(vrchol);
-                    auto syn = this->hierarchiaZastavok.accessSon(*aktualnaPozicia, index);
-                    //vypisSynov(*syn);
-                    if (syn != NULL)
-                    {
-                        //cout << hladanyText << endl;
-                        vypisZastavkuSNazvom(hladanyText);
-                    }
+            Algoritmus::algoritmus(begin, this->hierarchiaZastavok.end(), ulicaPredikat, pridajDoVysledku);
 
-                    //cout << this->hierarchiaZastavok.degree(*syn) << endl;
-                }
-                
-            }
-
-            /*cout << "\nZastavky na ulici obsahujucej '" << hladanyText << "':" << endl;
-            vypisVsetkyVrcholy(vrcholy);*/
             break;
         }
+
+        //case 5: {
+        //    string hladanyText;
+        //    cout << "Zadajte text, ktory ma byt obsiahnuty v nazve ulice: ";
+        //    getline(cin, hladanyText);
+
+        //    vrcholy.clear();
+
+        //    int index = 0;
+        //    for (IteratorHierarchie it(&this->hierarchiaZastavok, aktualnaPozicia);
+        //        it != this->hierarchiaZastavok.end(); ++it) {
+        //        index++;
+        //        Vrchol& vrchol = *it;
+        //        const Zastavka* z = vrchol.getZastavka();
+
+
+        //        if ((vrchol.getTyp() == TypVrcholu::ULICA && vrchol.getNazov().find(hladanyText) != string::npos)) {
+        //            vrcholy.push_back(vrchol);
+        //            auto syn = this->hierarchiaZastavok.accessSon(*aktualnaPozicia, index);
+        //            //vypisSynov(*syn);
+        //            if (syn != NULL)
+        //            {
+        //                //cout << hladanyText << endl;
+        //                vypisZastavkuSNazvom(hladanyText);
+        //            }
+
+        //            //cout << this->hierarchiaZastavok.degree(*syn) << endl;
+        //        }
+        //        
+        //    }
+
+        //    /*cout << "\nZastavky na ulici obsahujucej '" << hladanyText << "':" << endl;
+        //    vypisVsetkyVrcholy(vrcholy);*/
+        //    break;
+        //}
 
 
         default:

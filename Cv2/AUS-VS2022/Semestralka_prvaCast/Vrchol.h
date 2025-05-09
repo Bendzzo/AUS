@@ -1,5 +1,6 @@
-#include <string>
+#pragma once
 
+#include <string>
 #include "Zastavka.h"
 
 enum class TypVrcholu {
@@ -11,27 +12,27 @@ enum class TypVrcholu {
 
 class Vrchol {
     std::string nazov;
-    Zastavka* zastavka;
+    Zastavka* zastavkaPtr;
     TypVrcholu typ;
 
 public:
     Vrchol(const std::string& nazov, const TypVrcholu typ, Zastavka* zastavka = nullptr)
-        : nazov(nazov), zastavka(zastavka), typ(typ) {
+        : nazov(nazov), zastavkaPtr(zastavka), typ(typ) {
     }
 
     Vrchol(const std::string& nazov, const TypVrcholu typ)
-        : nazov(nazov), typ(typ), zastavka(nullptr) {
+        : nazov(nazov), typ(typ), zastavkaPtr(nullptr) {
     }
 
-    Vrchol() : nazov("GRT"), zastavka(nullptr), typ(TypVrcholu::DOPRAVCA) {}
+    Vrchol() : nazov("GRT"), zastavkaPtr(nullptr), typ(TypVrcholu::DOPRAVCA) {}
 
     const std::string& getNazov() const { return nazov; }
-    Zastavka* getZastavka() const { return zastavka; }
+    Zastavka* getZastavka() const { return zastavkaPtr; }
     TypVrcholu getTyp() const { return typ; }
 
     bool operator==(const Vrchol& other) const
     {
-	    if (nazov == other.nazov && zastavka == other.zastavka)
+	    if (nazov == other.nazov && zastavkaPtr == other.zastavkaPtr)
 	    {
             return true;
 	    }
