@@ -6,6 +6,8 @@
 #include <sstream>
 #include "Semestralka.h"
 
+using namespace std;
+
 void Semestralka::vypisVsetkyZastavky(const vector<Zastavka>& zastavkyNaVypis) {
     for (const auto& zastavka : zastavkyNaVypis) {
         zastavka.vypis();
@@ -161,6 +163,7 @@ void Semestralka::zobrazMenuPrvaCast() {
 
     int volba;
     string vstup;
+    vector<Zastavka> filtrovaneZastavky;
 
     while (true) {
         cout << "========== MENU ==========" << endl;
@@ -180,21 +183,21 @@ void Semestralka::zobrazMenuPrvaCast() {
         case 0:
             cout << "Koniec programu." << endl;
             return;
-
         case 1: {
             cout << "Zadajte nazov obce: \n";
             getline(cin, vstup);
 
-            //isInMunicipality funkcia
+            filtrovaneZastavky.clear();
+
+            // isInMunicipality funkcia
             auto obecPredikat = [vstup](const Zastavka& z) -> bool {
                 return z.obec == vstup;
-            };
+                };
+            auto pridajDoVysledku = [&filtrovaneZastavky](const Zastavka& z) {
+                filtrovaneZastavky.push_back(z);
+                };
 
-            Algoritmus::algoritmus(zastavky.begin(), zastavky.end(), obecPredikat, [&](const Zastavka& z)
-                {
-                    
-                });
-            //filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, obecPredikat);
+            Algoritmus::algoritmus(zastavky.begin(), zastavky.end(), obecPredikat, pridajDoVysledku);
 
             cout << "Zastavky v obci " << vstup << ":" << endl;
             vypisVsetkyZastavky(filtrovaneZastavky);
@@ -205,12 +208,18 @@ void Semestralka::zobrazMenuPrvaCast() {
             cout << "Zadajte nazov ulice: \n";
             getline(cin, vstup);
 
-            //isOnStreet funkcia
+            filtrovaneZastavky.clear();
+
+            // isOnStreet funkcia
             auto ulicaPredikat = [vstup](const Zastavka& z) -> bool {
                 return z.ulica.find(vstup) != string::npos;
                 };
 
-            filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, ulicaPredikat);
+            auto pridajDoVysledku = [&filtrovaneZastavky](const Zastavka& z) {
+                filtrovaneZastavky.push_back(z);
+                };
+
+            Algoritmus::algoritmus(zastavky.begin(), zastavky.end(), ulicaPredikat, pridajDoVysledku);
 
             cout << "Zastavky na ulici " << vstup << ":" << endl;
             vypisVsetkyZastavky(filtrovaneZastavky);
@@ -228,13 +237,19 @@ void Semestralka::zobrazMenuPrvaCast() {
             cout << "Zadajte maximalnu zemepisnu dlzku (longitude): \n";
             cin >> maxLong;
 
-            //isInRegion funkcia
+            filtrovaneZastavky.clear();
+
+            // isInRegion funkcia
             auto isInRegionPredikat = [minLat, maxLat, minLong, maxLong](const Zastavka& z) -> bool {
                 return z.latitude >= minLat && z.latitude <= maxLat &&
                     z.longitude >= minLong && z.longitude <= maxLong;
                 };
 
-            filter.filter(zastavky.begin(), zastavky.end(), filtrovaneZastavky, isInRegionPredikat);
+            auto pridajDoVysledku = [&filtrovaneZastavky](const Zastavka& z) {
+                filtrovaneZastavky.push_back(z);
+                };
+
+            Algoritmus::algoritmus(zastavky.begin(), zastavky.end(), isInRegionPredikat, pridajDoVysledku);
 
             cout << "Zastavky v zadanej geografickej oblasti:" << endl;
             vypisVsetkyZastavky(filtrovaneZastavky);
@@ -272,7 +287,6 @@ void Semestralka::zobrazMenuDruhaCast()
     int volba;
     string vstup;
     BlokHierarchie* aktualnaPozicia = koren_;
-    FilterAlgorithm<vector<Zastavka>::iterator, vector<Zastavka>> filter;
 
     std::vector<Vrchol> vrcholy;
 
