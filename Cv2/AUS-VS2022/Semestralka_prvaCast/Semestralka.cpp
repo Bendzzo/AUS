@@ -272,12 +272,9 @@ void Semestralka::zobrazMenuDruhaCast()
     string vstup;
     BlokHierarchie* aktualnaPozicia = koren_;
 
-    std::vector<Vrchol> vrcholy;
 
     while (true) {
         IteratorHierarchie zaciatok(&this->hierarchiaZastavok, aktualnaPozicia);
-        vrcholy.clear();
-        std::vector<Zastavka> filtrovaneZastavkyPreVypis;
 
         cout << "\n========== MENU DRUHEJ UROVNE ==========" << endl;
         cout << "Aktualna pozicia: " << aktualnaPozicia->data_.getNazov() << endl;
@@ -341,7 +338,7 @@ void Semestralka::zobrazMenuDruhaCast()
         }
 
         case 3: {
-            filtrovaneZastavkyPreVypis.clear();
+            this->filtrovaneZastavky.clear();
             IteratorHierarchie begin(&this->hierarchiaZastavok, aktualnaPozicia);
 
             double minLat, maxLat, minLong, maxLong;
@@ -362,15 +359,15 @@ void Semestralka::zobrazMenuDruhaCast()
                     v.getZastavka()->longitude <= maxLong;
             };
 
-            auto pridajDoVysledku = [&filtrovaneZastavkyPreVypis](const Vrchol& v) {
+            auto pridajDoVysledku = [this](const Vrchol& v) {
                 if (v.getZastavka() != nullptr) {
-                    filtrovaneZastavkyPreVypis.push_back(*(v.getZastavka()));
+                    this->filtrovaneZastavky.push_back(*(v.getZastavka()));
                 }
             };
 
             Algoritmus::algoritmus(begin, this->hierarchiaZastavok.end(), isInRegionPredikat, pridajDoVysledku);
 
-            vypisVsetkyZastavky(filtrovaneZastavkyPreVypis);
+            vypisVsetkyZastavky(this->filtrovaneZastavky);
             break;
         }
 
@@ -378,7 +375,7 @@ void Semestralka::zobrazMenuDruhaCast()
             std::string obecNazov;
             std::cout << "Zadajte nazov obce: ";
             getline(std::cin, obecNazov);
-            filtrovaneZastavky.clear();
+            this->filtrovaneZastavky.clear();
             IteratorHierarchie begin(&this->hierarchiaZastavok, aktualnaPozicia);
 
 
@@ -390,14 +387,14 @@ void Semestralka::zobrazMenuDruhaCast()
                 return false;
             };
 
-        	auto pridajDoVysledku = [&filtrovaneZastavkyPreVypis](const Vrchol& v) {
+        	auto pridajDoVysledku = [this](const Vrchol& v) {
                 if (v.getZastavka() != nullptr) {
-                    filtrovaneZastavkyPreVypis.push_back(*(v.getZastavka()));
+                    this->filtrovaneZastavky.push_back(*(v.getZastavka()));
                 }
             };
 
             Algoritmus::algoritmus(begin, this->hierarchiaZastavok.end(), obecPredikat, pridajDoVysledku);
-            vypisVsetkyZastavky(filtrovaneZastavkyPreVypis);
+            vypisVsetkyZastavky(this->filtrovaneZastavky);
             break;
         }
 
@@ -406,7 +403,7 @@ void Semestralka::zobrazMenuDruhaCast()
         	cout << "Zadajte ulicu: ";
         	getline(cin, hladanyText);
 
-            filtrovaneZastavkyPreVypis.clear();
+            this->filtrovaneZastavky.clear();
 
             cout << hladanyText << endl;
             IteratorHierarchie begin(&this->hierarchiaZastavok, aktualnaPozicia);
@@ -418,15 +415,15 @@ void Semestralka::zobrazMenuDruhaCast()
                     return v.getZastavka()->ulica.find(hladanyText) != string::npos;
 	            }
             };
-            auto pridajDoVysledku = [&filtrovaneZastavkyPreVypis](const Vrchol& v) {
+            auto pridajDoVysledku = [this](const Vrchol& v) {
                 if (v.getZastavka() != nullptr) {
-                    filtrovaneZastavkyPreVypis.push_back(*(v.getZastavka()));
+                    this->filtrovaneZastavky.push_back(*(v.getZastavka()));
                 }
             };
 
             Algoritmus::algoritmus(begin, this->hierarchiaZastavok.end(), ulicaPredikat, pridajDoVysledku);
 
-            vypisVsetkyZastavky(filtrovaneZastavkyPreVypis);
+            vypisVsetkyZastavky(this->filtrovaneZastavky);
             break;
         }
         default:
