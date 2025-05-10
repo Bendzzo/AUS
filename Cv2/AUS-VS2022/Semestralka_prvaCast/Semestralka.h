@@ -23,9 +23,7 @@ public:
    void nacitajVsetkyZastavky(std::string nazovSuboru);  
    void zobrazMenuPrvaCast();  
    void zobrazMenuDruhaCast();
-   void test();
    void vypisVsetkyZastavky(const std::vector<Zastavka>& zastavkyNaVypis);
    void vypisSynov(BlokHierarchie& vrchol);
    void vypisZastavkuSNazvom(std::string nazov);
-   //vector<Zastavka> getSynSov(BlokHierarchie& vrchol);
 };

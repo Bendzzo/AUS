@@ -266,8 +266,6 @@ void Semestralka::vypisSynov(BlokHierarchie& vrchol)
     }
 }
 
-
-
 void Semestralka::zobrazMenuDruhaCast()
 {
     int volba;
@@ -297,9 +295,9 @@ void Semestralka::zobrazMenuDruhaCast()
 
         cout << "1. Prejst na nadradenu uroven" << endl;
         cout << "2. Vybrat syna" << endl;
-        cout << "3. Filtrovat podla zemepisnej dlzky" << endl;
-        cout << "4. Filtrovat podla obce" << endl;
-        cout << "5. Filtrovat podla ulice obsahujucej text" << endl;
+        cout << "3. Filtrovat podla Zemepisnej dlzky" << endl;
+        cout << "4. Filtrovat podla Obce" << endl;
+        cout << "5. Filtrovat podla Ulice" << endl;
         cout << "0. Navrat do hlavneho menu" << endl;
         cout << "=========================================" << endl;
         cout << "Zadajte cislo volby: ";
@@ -307,8 +305,6 @@ void Semestralka::zobrazMenuDruhaCast()
 
         // Clear input buffer
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-        //ds::amt::ImplicitSequence<Vrchol*> filtrovaneVrcholy;
         switch (volba) {
         case 0:
             return;
@@ -388,9 +384,7 @@ void Semestralka::zobrazMenuDruhaCast()
 
             // isInMunicipality funkcia
             auto obecPredikat = [&](const Vrchol& v) -> bool {
-                //cout << "Spracoval som vrchol: " << v.getNazov() << endl;
                 if (v.getTyp() == TypVrcholu::ZASTAVKA && v.getZastavka() != nullptr) {
-                    //cout << "NIE je nullptr" << endl;
                     return v.getZastavka()->obec.find(obecNazov) != string::npos;
                 }
                 return false;
@@ -435,64 +429,10 @@ void Semestralka::zobrazMenuDruhaCast()
             vypisVsetkyZastavky(filtrovaneZastavkyPreVypis);
             break;
         }
-
-        //case 5: {
-        //    string hladanyText;
-        //    cout << "Zadajte text, ktory ma byt obsiahnuty v nazve ulice: ";
-        //    getline(cin, hladanyText);
-
-        //    vrcholy.clear();
-
-        //    int index = 0;
-        //    for (IteratorHierarchie it(&this->hierarchiaZastavok, aktualnaPozicia);
-        //        it != this->hierarchiaZastavok.end(); ++it) {
-        //        index++;
-        //        Vrchol& vrchol = *it;
-        //        const Zastavka* z = vrchol.getZastavka();
-
-
-        //        if ((vrchol.getTyp() == TypVrcholu::ULICA && vrchol.getNazov().find(hladanyText) != string::npos)) {
-        //            vrcholy.push_back(vrchol);
-        //            auto syn = this->hierarchiaZastavok.accessSon(*aktualnaPozicia, index);
-        //            //vypisSynov(*syn);
-        //            if (syn != NULL)
-        //            {
-        //                //cout << hladanyText << endl;
-        //                vypisZastavkuSNazvom(hladanyText);
-        //            }
-
-        //            //cout << this->hierarchiaZastavok.degree(*syn) << endl;
-        //        }
-        //        
-        //    }
-
-        //    /*cout << "\nZastavky na ulici obsahujucej '" << hladanyText << "':" << endl;
-        //    vypisVsetkyVrcholy(vrcholy);*/
-        //    break;
-        //}
-
-
         default:
             cout << "Neplatna volba. Skuste znova." << endl;
         }
     }
 }
 
-void Semestralka::test()
-{
-    // isOnStreet funkcia
-    string hladanyText;
-    auto ulicaPredikat = [&hladanyText](const Vrchol& v) -> bool {
-        return v.getTyp() == TypVrcholu::ULICA && v.getNazov().find(hladanyText) != string::npos;
-    };
-
-    vector<Vrchol> vrcholy;
-    auto pridajDoVysledku = [&vrcholy](Vrchol& v) {
-        //filtrovaneVrcholy.insertLast().data_ = &v;
-        vrcholy.push_back(v);
-        v.getZastavka()->vypis();
-        };
-
-    Algoritmus::algoritmus(this->hierarchiaZastavok.begin(), this->hierarchiaZastavok.end(), ulicaPredikat, pridajDoVysledku);
-}
 
