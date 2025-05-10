@@ -20,10 +20,6 @@ public:
         : nazov(nazov), zastavkaPtr(zastavka), typ(typ) {
     }
 
-    Vrchol(const std::string& nazov, const TypVrcholu typ)
-        : nazov(nazov), typ(typ), zastavkaPtr(nullptr) {
-    }
-
     Vrchol() : nazov("GRT"), zastavkaPtr(nullptr), typ(TypVrcholu::DOPRAVCA) {}
 
     const std::string& getNazov() const { return nazov; }
