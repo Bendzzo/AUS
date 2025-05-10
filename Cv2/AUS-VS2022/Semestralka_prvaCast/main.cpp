@@ -1,7 +1,12 @@
-﻿#include "Zastavka.h"
+﻿#include "libds/heap_monitor.h"
+
+#include "Zastavka.h"
 #include "Semestralka.h"
 
+
 int main() {
+	initHeapMonitor();
+
     std::vector<Zastavka> zastavky;
     std::vector<Zastavka> filtrovaneZastavky;
     Semestralka semestralka(zastavky, filtrovaneZastavky);
@@ -26,7 +31,7 @@ int main() {
 	        case 0:
 		        {
 			        std::cout << "Koniec" << std::endl;
-					return 1;
+					return 0;
 		        }
 	        case 1:
             {
@@ -45,7 +50,4 @@ int main() {
             }
         } 
     }
-
-
-    return 0;
 }
