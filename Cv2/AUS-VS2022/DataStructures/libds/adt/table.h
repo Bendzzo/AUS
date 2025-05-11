@@ -656,25 +656,46 @@ namespace ds::adt {
     template <typename K, typename T>
     void HashTable<K, T>::insert(const K& key, T data)
     {
-        // TODO 11
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        size_t index = hashFunction_(key) % primaryRegion_->size();
+        SynonymTable* synonyms = primaryRegion_->access(index)->data_;
+        if (!synonyms)
+        {
+            synonyms = new SynonymTable();
+            primaryRegion_->access(index)->data_ = synonyms;
+        }
+        synonyms->insert(key, data);
+        size_++;
     }
 
     template <typename K, typename T>
     bool HashTable<K, T>::tryFind(const K& key, T*& data) const
     {
-        // TODO 11
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        size_t index = hashFunction_(key) % primaryRegion_->size();
+        SynonymTable* synonyms = primaryRegion_->access(index)->data_;
+        if (!synonyms)
+        {
+            return false;
+        }
+        return synonyms->tryFind(key, data);
     }
 
     template <typename K, typename T>
     T HashTable<K, T>::remove(const K& key)
     {
-        // TODO 11
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        size_t index = hashFunction_(key) % primaryRegion_->size();
+        SynonymTable* synonyms = primaryRegion_->access(index)->data_;
+        if (!synonyms)
+        {
+             throw std::invalid_argument("No such key present!");
+        }
+        T item = synonyms->remove(key);
+        if (synonyms->isEmpty())
+        {
+            delete synonyms;
+            primaryRegion_->access(index)->data_ = nullptr;
+        }
+        size_--;
+        return item;
     }
 
     template <typename K, typename T>
@@ -715,9 +736,22 @@ namespace ds::adt {
     template <typename K, typename T>
     typename HashTable<K, T>::HashTableIterator& HashTable<K, T>::HashTableIterator::operator++()
     {
-        // TODO 11
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        ++(*synonymIterator_);
+        SynonymTableIterator oldIt = *synonymIterator_;
+        if (!(oldIt != (**tablesCurrent_)->end()))
+        {
+            do
+            {
+                ++(*tablesCurrent_);
+            } while (*tablesCurrent_ != *tablesLast_ && **tablesCurrent_ == nullptr);
+            delete synonymIterator_;
+            synonymIterator_ = nullptr;
+            if (*tablesCurrent_ != *tablesLast_)
+            {
+                synonymIterator_ = new SynonymTableIterator((**tablesCurrent_)->begin());
+            }
+        }
+        return *this;
     }
 
     template <typename K, typename T>

@@ -137,11 +137,41 @@ void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
 
     }
     subor.close();
+    vytvorTabulkuZastavok();
     //cout << "Hierarchia nacitana.\n Pocet vrcholov: " << this->hierarchiaZastavok.size() << endl;
     //cout << this->hierarchiaZastavok.degree(*koren_);
     //cout << this->hierarchiaZastavok.degree(*this->hierarchiaZastavok.accessSon(*koren_, 4));
     //cout << this->hierarchiaZastavok.accessSon(*koren_, 4)->data_.getNazov();
     //vypisSynov(*koren_);
+}
+
+void Semestralka::vytvorTabulkuZastavok()
+{
+    //delete tabulkaZastavok;
+    //tabulkaZastavok = new ZastavkaTable();
+    
+    for (Zastavka zastavka : this->zastavky)
+    {
+        if (!tabulkaZastavok.contains(zastavka.id))
+        {
+            tabulkaZastavok.insert(zastavka.id, &zastavka);
+        }
+    }
+
+    std::cout << "Tabulka zastavok bola inicializovana. Pocet zastavok: " << tabulkaZastavok.size() << std::endl;
+}
+
+Zastavka* Semestralka::najdiZastavkuPodlaID(int id)
+{
+    try
+    {
+        return tabulkaZastavok.find(id);
+    }
+    catch (const std::out_of_range& e)
+    {
+        //cerr << "Zastavka " << id << " nebola najdena!" << endl;
+        return nullptr;
+    }
 }
 
 
@@ -432,4 +462,47 @@ void Semestralka::zobrazMenuDruhaCast()
     }
 }
 
+void Semestralka::zobrazMenuTretiaCast()
+{
+    int volba;
+    int idZastavky;
 
+    while (true) {
+        std::cout << "\n========== MENU TRETEJ UROVNE ==========" << std::endl;
+        std::cout << "1. Vyhladat zastavku podla ID" << std::endl;
+        std::cout << "0. Navrat do hlavneho menu" << std::endl;
+        std::cout << "=========================================" << std::endl;
+        std::cout << "Zadajte cislo volby: ";
+        std::cin >> volba;
+
+        // Clear input buffer
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+        switch (volba) {
+        case 0:
+            return;
+        case 1: {
+            std::cout << "Zadajte ID zastavky: ";
+            std::cin >> idZastavky;
+
+            // Clear input buffer
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+            Zastavka* najdenaZastavka = najdiZastavkuPodlaID(idZastavky);
+
+            if (najdenaZastavka != nullptr)
+            {
+                std::cout << "\nNajdena zastavka s ID " << idZastavky << ":" << std::endl;
+                najdenaZastavka->vypis();
+            }
+            else
+            {
+                std::cout << "\nZastavka s ID " << idZastavky << " nebola najdena." << std::endl;
+            }
+            break;
+        }
+        default:
+            std::cout << "Neplatna volba. Skuste znova." << std::endl;
+        }
+    }
+}
