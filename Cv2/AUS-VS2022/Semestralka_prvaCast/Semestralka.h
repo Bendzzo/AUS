@@ -17,17 +17,17 @@ class Semestralka
    BlokHierarchie* koren_;  
    std::vector<Zastavka> zastavky;  
    std::vector<Zastavka> filtrovaneZastavky;
-   ZastavkaTable tabulkaZastavok;
+   ZastavkaTable* tabulkaZastavok;
    //ZastavkaTable* tabulkaZastavok;
 	
 
 public:  
    Semestralka(std::vector<Zastavka>& zastavky, std::vector<Zastavka>& filtrovaneZastavky)  
-       : zastavky(zastavky), filtrovaneZastavky(filtrovaneZastavky), koren_(nullptr) {}  
+       : zastavky(zastavky), filtrovaneZastavky(filtrovaneZastavky), koren_(nullptr), tabulkaZastavok(nullptr) {}  
 
 	~Semestralka()
    {
-		//delete tabulkaZastavok;
+		delete tabulkaZastavok;
    }
    void nacitajVsetkyZastavky(std::string nazovSuboru);
    void vytvorTabulkuZastavok();

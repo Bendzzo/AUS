@@ -31,6 +31,8 @@ void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
 
     zastavky.reserve(2650);
 
+    tabulkaZastavok = new ZastavkaTable();
+
     ifstream subor;
     subor.open(nazovSuboru);
     if (!subor.is_open()) {
@@ -99,6 +101,8 @@ void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
         //getline(inputString, aktualnaZastavka.obec);
 
         zastavky.push_back(aktualnaZastavka);
+
+        //Nacitanie hierarchie
         Zastavka* zastavkaPtr = &zastavky.back();
 
         if (aktualnaZastavka.obec != poslednaObec)
@@ -135,39 +139,33 @@ void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
         /*cout << riadok++ << " ";
         zastavkaPtr.vypis();*/
 
+
+        //Nacitanie zastavok do tabulky
+        try {
+            tabulkaZastavok->insert(aktualnaZastavka.id, zastavkaPtr);
+        }
+        catch (const logic_error& e) {
+            cerr << "Duplicitny kluc ID " << aktualnaZastavka.id << ": " << e.what() << endl;
+        }
+
     }
     subor.close();
-    vytvorTabulkuZastavok();
     //cout << "Hierarchia nacitana.\n Pocet vrcholov: " << this->hierarchiaZastavok.size() << endl;
     //cout << this->hierarchiaZastavok.degree(*koren_);
     //cout << this->hierarchiaZastavok.degree(*this->hierarchiaZastavok.accessSon(*koren_, 4));
     //cout << this->hierarchiaZastavok.accessSon(*koren_, 4)->data_.getNazov();
     //vypisSynov(*koren_);
+    //cout << "Zastavky boli do tabulky nacitane. Pocet: " << tabulkaZastavok->size() << endl;
 }
 
-void Semestralka::vytvorTabulkuZastavok()
-{
-    //delete tabulkaZastavok;
-    //tabulkaZastavok = new ZastavkaTable();
-    
-    for (Zastavka zastavka : this->zastavky)
-    {
-        if (!tabulkaZastavok.contains(zastavka.id))
-        {
-            tabulkaZastavok.insert(zastavka.id, &zastavka);
-        }
-    }
-
-    std::cout << "Tabulka zastavok bola inicializovana. Pocet zastavok: " << tabulkaZastavok.size() << std::endl;
-}
 
 Zastavka* Semestralka::najdiZastavkuPodlaID(int id)
 {
     try
     {
-        return tabulkaZastavok.find(id);
+        return tabulkaZastavok->find(id);
     }
-    catch (const std::out_of_range& e)
+    catch (const out_of_range& e)
     {
         //cerr << "Zastavka " << id << " nebola najdena!" << endl;
         return nullptr;
@@ -402,9 +400,9 @@ void Semestralka::zobrazMenuDruhaCast()
         }
 
         case 4: {
-            std::string obecNazov;
-            std::cout << "Zadajte nazov obce: ";
-            getline(std::cin, obecNazov);
+            string obecNazov;
+            cout << "Zadajte nazov obce: ";
+            getline(cin, obecNazov);
             this->filtrovaneZastavky.clear();
             IteratorHierarchie begin(&this->hierarchiaZastavok, aktualnaPozicia);
 
@@ -468,41 +466,41 @@ void Semestralka::zobrazMenuTretiaCast()
     int idZastavky;
 
     while (true) {
-        std::cout << "\n========== MENU TRETEJ UROVNE ==========" << std::endl;
-        std::cout << "1. Vyhladat zastavku podla ID" << std::endl;
-        std::cout << "0. Navrat do hlavneho menu" << std::endl;
-        std::cout << "=========================================" << std::endl;
-        std::cout << "Zadajte cislo volby: ";
-        std::cin >> volba;
+        cout << "\n========== MENU TRETEJ UROVNE ==========" << endl;
+        cout << "1. Vyhladat zastavku podla ID" << endl;
+        cout << "0. Navrat do hlavneho menu" << endl;
+        cout << "=========================================" << endl;
+        cout << "Zadajte cislo volby: ";
+        cin >> volba;
 
         // Clear input buffer
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         switch (volba) {
         case 0:
             return;
         case 1: {
-            std::cout << "Zadajte ID zastavky: ";
-            std::cin >> idZastavky;
+            cout << "Zadajte ID zastavky: ";
+            cin >> idZastavky;
 
             // Clear input buffer
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
             Zastavka* najdenaZastavka = najdiZastavkuPodlaID(idZastavky);
 
             if (najdenaZastavka != nullptr)
             {
-                std::cout << "\nNajdena zastavka s ID " << idZastavky << ":" << std::endl;
+                cout << "\nNajdena zastavka s ID " << idZastavky << ":" << endl;
                 najdenaZastavka->vypis();
             }
             else
             {
-                std::cout << "\nZastavka s ID " << idZastavky << " nebola najdena." << std::endl;
+                cout << "\nZastavka s ID " << idZastavky << " nebola najdena." << endl;
             }
             break;
         }
         default:
-            std::cout << "Neplatna volba. Skuste znova." << std::endl;
+            cout << "Neplatna volba. Skuste znova." << endl;
         }
     }
 }
