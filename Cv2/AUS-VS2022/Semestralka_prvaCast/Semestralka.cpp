@@ -491,6 +491,7 @@ void Semestralka::zobrazMenuTretiaCast()
             if (najdenaZastavka != nullptr)
             {
                 cout << "\nNajdena zastavka s ID " << idZastavky << ":" << endl;
+                cout << "------------------------" << endl;
                 najdenaZastavka->vypis();
             }
             else
