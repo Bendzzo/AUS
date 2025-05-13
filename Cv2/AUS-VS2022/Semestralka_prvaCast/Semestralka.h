@@ -30,12 +30,10 @@ public:
 		delete tabulkaZastavok;
    }
    void nacitajVsetkyZastavky(std::string nazovSuboru);
-   void vytvorTabulkuZastavok();
    Zastavka* najdiZastavkuPodlaID(int id);
    void zobrazMenuPrvaCast();  
    void zobrazMenuDruhaCast();
    void zobrazMenuTretiaCast();
    void vypisVsetkyZastavky(const std::vector<Zastavka>& zastavkyNaVypis);
    void vypisSynov(BlokHierarchie& vrchol);
-   void vypisZastavkuSNazvom(std::string nazov);
 };
