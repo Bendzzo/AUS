@@ -625,9 +625,7 @@ namespace ds::adt {
     template <typename K, typename T>
     bool HashTable<K, T>::equals(const ADT& other)
     {
-        // TODO 11
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        return Table<K, T>::areEqual(*this, other);
     }
 
     template <typename K, typename T>
@@ -656,23 +654,23 @@ namespace ds::adt {
     template <typename K, typename T>
     void HashTable<K, T>::insert(const K& key, T data)
     {
-        size_t index = hashFunction_(key) % primaryRegion_->size();
-        SynonymTable* synonyms = primaryRegion_->access(index)->data_;
-        if (!synonyms)
+        size_t index = this->hashFunction_(key) % this->primaryRegion_->size();
+        SynonymTable* synonyms = this->primaryRegion_->access(index)->data_;
+        if (synonyms == nullptr)
         {
             synonyms = new SynonymTable();
-            primaryRegion_->access(index)->data_ = synonyms;
+            this->primaryRegion_->access(index)->data_ = synonyms;
         }
         synonyms->insert(key, data);
-        size_++;
+        ++this->size_;
     }
 
     template <typename K, typename T>
     bool HashTable<K, T>::tryFind(const K& key, T*& data) const
     {
-        size_t index = hashFunction_(key) % primaryRegion_->size();
-        SynonymTable* synonyms = primaryRegion_->access(index)->data_;
-        if (!synonyms)
+        size_t index = this->hashFunction_(key) % this->primaryRegion_->size();
+        SynonymTable* synonyms = this->primaryRegion_->access(index)->data_;
+        if (synonyms == nullptr)
         {
             return false;
         }
@@ -682,20 +680,20 @@ namespace ds::adt {
     template <typename K, typename T>
     T HashTable<K, T>::remove(const K& key)
     {
-        size_t index = hashFunction_(key) % primaryRegion_->size();
-        SynonymTable* synonyms = primaryRegion_->access(index)->data_;
-        if (!synonyms)
+        size_t index = this->hashFunction_(key) % this->primaryRegion_->size();
+        SynonymTable* synonyms = this->primaryRegion_->access(index)->data_;
+        if (synonyms == nullptr)
         {
-             throw std::invalid_argument("No such key present!");
+             throw std::out_of_range("Table does not contain an element with the given key");
         }
-        T item = synonyms->remove(key);
+        T element = synonyms->remove(key);
         if (synonyms->isEmpty())
         {
             delete synonyms;
-            primaryRegion_->access(index)->data_ = nullptr;
+            this->primaryRegion_->access(index)->data_ = nullptr;
         }
-        size_--;
-        return item;
+        --this->size_;
+        return element;
     }
 
     template <typename K, typename T>
@@ -737,8 +735,7 @@ namespace ds::adt {
     typename HashTable<K, T>::HashTableIterator& HashTable<K, T>::HashTableIterator::operator++()
     {
         ++(*synonymIterator_);
-        SynonymTableIterator oldIt = *synonymIterator_;
-        if (!(oldIt != (**tablesCurrent_)->end()))
+        if (*synonymIterator_ == (**tablesCurrent_)->end())
         {
             do
             {
