@@ -232,7 +232,7 @@ void Semestralka::zobrazMenuPrvaCast() {
 
             // isInMunicipality funkcia
             auto obecPredikat = [vstup](const Zastavka& z) -> bool {
-                return z.obec == vstup;
+                return z.obec.find(vstup) != string::npos;
                 };
 
             auto pridajDoVysledku = [&aktualneZastavky](const Zastavka& z) {
