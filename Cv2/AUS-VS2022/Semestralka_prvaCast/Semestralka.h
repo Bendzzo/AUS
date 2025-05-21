@@ -4,7 +4,11 @@
 #include "libds/amt/explicit_hierarchy.h"  
 #include "Zastavka.h"
 #include "libds/adt/table.h"
+
+#include <limits>
+#define NOMINMAX 
 #include "libds/adt/list.h"
+#include "libds/adt/sorts.h"
 
 using ViacCestnaHierarchia = ds::amt::MultiWayExplicitHierarchy<Vrchol>;  
 using BlokHierarchie = ds::amt::MultiWayExplicitHierarchyBlock<Vrchol>;
@@ -16,14 +20,15 @@ class Semestralka
    ViacCestnaHierarchia hierarchiaZastavok;  
    BlokHierarchie* koren_;  
    std::vector<Zastavka> zastavky;  
-   std::vector<Zastavka> filtrovaneZastavky;
    ZastavkaTable* tabulkaZastavok;
    //ZastavkaTable* tabulkaZastavok;
 	
 
 public:  
-   Semestralka(std::vector<Zastavka>& zastavky, std::vector<Zastavka>& filtrovaneZastavky)  
-       : zastavky(zastavky), filtrovaneZastavky(filtrovaneZastavky), koren_(nullptr), tabulkaZastavok(nullptr) {}  
+   Semestralka(std::vector<Zastavka>& zastavky)
+       : zastavky(zastavky), koren_(nullptr), tabulkaZastavok(nullptr)
+   {
+   }  
 
 	~Semestralka()
    {
@@ -34,6 +39,8 @@ public:
    void zobrazMenuPrvaCast();  
    void zobrazMenuDruhaCast();
    void zobrazMenuTretiaCast();
-   void vypisVsetkyZastavky(const std::vector<Zastavka>& zastavkyNaVypis);
+   void zobrazMenuStvrtaCast(ds::amt::ImplicitSequence<Zastavka>& zastavky);
+   void vypisZastavky(ds::amt::ImplicitSequence<Zastavka>& zastavkyNaVypis);
+   void vypisVsetkyZastavky();
    void vypisSynov(BlokHierarchie& vrchol);
 };

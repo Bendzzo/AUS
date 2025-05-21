@@ -1,14 +1,14 @@
 ﻿#include "Zastavka.h"
 #include "FilterAlgorithm.h"
 #include <iostream>
-#include <limits>
 #include <fstream>
 #include <sstream>
 #include "Semestralka.h"
 
 using namespace std;
 
-void Semestralka::vypisVsetkyZastavky(const vector<Zastavka>& zastavkyNaVypis) {
+
+void Semestralka::vypisZastavky(ds::amt::ImplicitSequence<Zastavka>& zastavkyNaVypis) {
 	if (zastavkyNaVypis.size() > 0)
 	{
         cout << "\n------------------------" << endl;
@@ -19,8 +19,21 @@ void Semestralka::vypisVsetkyZastavky(const vector<Zastavka>& zastavkyNaVypis) {
     cout << "Celkovy pocet zastavok: " << zastavkyNaVypis.size() << endl;
 }
 
+void Semestralka::vypisVsetkyZastavky()
+{
+    if (zastavky.size() > 0)
+    {
+        cout << "\n------------------------" << endl;
+    }
+    for (const auto& zastavka : zastavky) {
+        zastavka.vypis();
+    }
+    cout << "Celkovy pocet zastavok: " << zastavky.size() << endl;
+}
+
 void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
 {
+
     koren_ = &this->hierarchiaZastavok.emplaceRoot();
     koren_->data_ = Vrchol();
 
@@ -167,7 +180,6 @@ Zastavka* Semestralka::najdiZastavkuPodlaID(int id)
     }
     catch (const out_of_range& e)
     {
-        //cerr << "Zastavka " << id << " nebola najdena!" << endl;
         return nullptr;
     }
 }
@@ -177,7 +189,7 @@ void Semestralka::zobrazMenuPrvaCast() {
 
     int volba;
     string vstup;
-    vector<Zastavka> filtrovaneZastavky;
+    int zoradenie;
 
     while (true) {
         cout << "========== MENU ==========" << endl;
@@ -198,49 +210,91 @@ void Semestralka::zobrazMenuPrvaCast() {
             cout << "Koniec programu." << endl;
             return;
         case 1: {
+            ds::amt::ImplicitSequence<Zastavka> aktualneZastavky;
+            aktualneZastavky.reserveCapacity(2650);
+
             cout << "Zadajte nazov obce: \n";
             getline(cin, vstup);
 
-            filtrovaneZastavky.clear();
+            /*if (filtrovaneZastavky.size() > 0)
+            {
+                filtrovaneZastavky = zastavkas;
+            }*/
+            cout << "Chcete tieto zastavky zoradit?\n[1]ano [2]nie" << endl;
+            cin >> zoradenie;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            if (zoradenie != 1 && zoradenie != 2)
+            {
+	            cout << "Zly vyber. Automaticky sa zastavky nebudu zoradovat!" << endl;
+                zoradenie = 2;
+            }
 
             // isInMunicipality funkcia
             auto obecPredikat = [vstup](const Zastavka& z) -> bool {
                 return z.obec == vstup;
                 };
-            auto pridajDoVysledku = [&filtrovaneZastavky](const Zastavka& z) {
-                filtrovaneZastavky.push_back(z);
-                };
+
+            auto pridajDoVysledku = [&aktualneZastavky](const Zastavka& z) {
+                aktualneZastavky.insertLast().data_ = z;
+            };
 
             Algoritmus::algoritmus(zastavky.begin(), zastavky.end(), obecPredikat, pridajDoVysledku);
 
+            if (zoradenie == 1)
+            {
+                //this->filtrovaneZastavky = aktualneZastavky;
+                zobrazMenuStvrtaCast(aktualneZastavky);
+                break;
+            }
             cout << "Zastavky v obci " << vstup << ":" << endl;
-            vypisVsetkyZastavky(filtrovaneZastavky);
+            vypisZastavky(aktualneZastavky);
             break;
         }
 
         case 2: {
+            ds::amt::ImplicitSequence<Zastavka> aktualneZastavky;
+            aktualneZastavky.reserveCapacity(2650);
+
             cout << "Zadajte nazov ulice: \n";
             getline(cin, vstup);
 
-            filtrovaneZastavky.clear();
+            cout << "Chcete tieto zastavky zoradit?\n[1]ano [2]nie" << endl;
+            cin >> zoradenie;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            if (zoradenie != 1 && zoradenie != 2)
+            {
+                cout << "Zly vyber. Automaticky sa zastavky nebudu zoradovat!" << endl;
+                zoradenie = 2;
+            }
 
             // isOnStreet funkcia
             auto ulicaPredikat = [vstup](const Zastavka& z) -> bool {
                 return z.ulica.find(vstup) != string::npos;
-                };
+            };
 
-            auto pridajDoVysledku = [&filtrovaneZastavky](const Zastavka& z) {
-                filtrovaneZastavky.push_back(z);
-                };
+            auto pridajDoVysledku = [&aktualneZastavky](const Zastavka& z) {
+                aktualneZastavky.insertLast().data_ = z;
+            };
 
             Algoritmus::algoritmus(zastavky.begin(), zastavky.end(), ulicaPredikat, pridajDoVysledku);
 
+            if (zoradenie == 1)
+            {
+                zobrazMenuStvrtaCast(aktualneZastavky);
+                break;
+            }
+
             cout << "Zastavky na ulici " << vstup << ":" << endl;
-            vypisVsetkyZastavky(filtrovaneZastavky);
+            vypisZastavky(aktualneZastavky);
             break;
         }
 
         case 3: {
+            ds::amt::ImplicitSequence<Zastavka> aktualneZastavky;
+            aktualneZastavky.reserveCapacity(2650);
+
             double minLat, maxLat, minLong, maxLong;
             cout << "Zadajte minimalnu zemepisnu sirku (latitude): \n";
             cin >> minLat;
@@ -251,7 +305,15 @@ void Semestralka::zobrazMenuPrvaCast() {
             cout << "Zadajte maximalnu zemepisnu dlzku (longitude): \n";
             cin >> maxLong;
 
-            filtrovaneZastavky.clear();
+            cout << "Chcete tieto zastavky zoradit?\n[1]ano [2]nie" << endl;
+            cin >> zoradenie;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            if (zoradenie != 1 && zoradenie != 2)
+            {
+                cout << "Zly vyber. Automaticky sa zastavky nebudu zoradovat!" << endl;
+                zoradenie = 2;
+            }
 
             // isInRegion funkcia
             auto isInRegionPredikat = [minLat, maxLat, minLong, maxLong](const Zastavka& z) -> bool {
@@ -259,26 +321,30 @@ void Semestralka::zobrazMenuPrvaCast() {
                     z.longitude >= minLong && z.longitude <= maxLong;
                 };
 
-            auto pridajDoVysledku = [&filtrovaneZastavky](const Zastavka& z) {
-                filtrovaneZastavky.push_back(z);
-                };
+            auto pridajDoVysledku = [&aktualneZastavky](const Zastavka& z) {
+                aktualneZastavky.insertLast().data_ = z;
+            };
 
             Algoritmus::algoritmus(zastavky.begin(), zastavky.end(), isInRegionPredikat, pridajDoVysledku);
 
+            if (zoradenie == 1)
+            {
+                zobrazMenuStvrtaCast(aktualneZastavky);
+                break;
+            }
             cout << "Zastavky v zadanej geografickej oblasti:" << endl;
-            vypisVsetkyZastavky(filtrovaneZastavky);
+            vypisZastavky(aktualneZastavky);
             break;
         }
 
         case 4:
             cout << "Vsetky zastavky:" << endl;
-            vypisVsetkyZastavky(zastavky);
+            vypisVsetkyZastavky();
             break;
 
         default:
             cout << "Neplatna volba. Skuste znova." << endl;
         }
-
 
         cout << endl;
     }
@@ -299,6 +365,7 @@ void Semestralka::zobrazMenuDruhaCast()
     int volba;
     string vstup;
     BlokHierarchie* aktualnaPozicia = koren_;
+    int zoradenie;
 
 
     while (true) {
@@ -354,7 +421,7 @@ void Semestralka::zobrazMenuDruhaCast()
             size_t index;
             cout << "Zadajte index syna: ";
             cin >> index;
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
             if (index >= pocetSynov) {
                 cout << "Neplatny index!" << endl;
@@ -366,7 +433,9 @@ void Semestralka::zobrazMenuDruhaCast()
         }
 
         case 3: {
-            this->filtrovaneZastavky.clear();
+            ds::amt::ImplicitSequence<Zastavka> aktualneZastavky;
+            aktualneZastavky.reserveCapacity(2650);
+
             IteratorHierarchie begin(&this->hierarchiaZastavok, aktualnaPozicia);
 
             double minLat, maxLat, minLong, maxLong;
@@ -379,6 +448,16 @@ void Semestralka::zobrazMenuDruhaCast()
             cout << "Zadajte maximalnu zemepisnu dlzku (longitude): \n";
             cin >> maxLong;
 
+            cout << "Chcete tieto zastavky zoradit?\n[1]ano [2]nie" << endl;
+            cin >> zoradenie;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            if (zoradenie != 1 && zoradenie != 2)
+            {
+                cout << "Zly vyber. Automaticky sa zastavky nebudu zoradovat!" << endl;
+                zoradenie = 2;
+            }
+
             // isInRegion funkcia
             auto isInRegionPredikat = [minLat, maxLat, minLong, maxLong](const Vrchol& v) -> bool {
 
@@ -387,25 +466,42 @@ void Semestralka::zobrazMenuDruhaCast()
                     v.getZastavka()->longitude <= maxLong;
             };
 
-            auto pridajDoVysledku = [this](const Vrchol& v) {
+            auto pridajDoVysledku = [&aktualneZastavky](const Vrchol& v) {
                 if (v.getZastavka() != nullptr) {
-                    this->filtrovaneZastavky.push_back(*(v.getZastavka()));
+                    aktualneZastavky.insertLast().data_ = *(v.getZastavka());
                 }
             };
 
             Algoritmus::algoritmus(begin, this->hierarchiaZastavok.end(), isInRegionPredikat, pridajDoVysledku);
 
-            vypisVsetkyZastavky(this->filtrovaneZastavky);
+            if (zoradenie == 1)
+            {
+                zobrazMenuStvrtaCast(aktualneZastavky);
+                break;
+            }
+            vypisZastavky(aktualneZastavky);
+            ;
             break;
         }
 
         case 4: {
+            ds::amt::ImplicitSequence<Zastavka> aktualneZastavky;
+            aktualneZastavky.reserveCapacity(2650);
+
             string obecNazov;
             cout << "Zadajte nazov obce: ";
             getline(cin, obecNazov);
-            this->filtrovaneZastavky.clear();
             IteratorHierarchie begin(&this->hierarchiaZastavok, aktualnaPozicia);
 
+        	cout << "Chcete tieto zastavky zoradit?\n[1]ano [2]nie" << endl;
+            cin >> zoradenie;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            if (zoradenie != 1 && zoradenie != 2)
+            {
+                cout << "Zly vyber. Automaticky sa zastavky nebudu zoradovat!" << endl;
+                zoradenie = 2;
+            }
 
             // isInMunicipality funkcia
             auto obecPredikat = [&](const Vrchol& v) -> bool {
@@ -415,26 +511,43 @@ void Semestralka::zobrazMenuDruhaCast()
                 return false;
             };
 
-        	auto pridajDoVysledku = [this](const Vrchol& v) {
+        	auto pridajDoVysledku = [&aktualneZastavky](const Vrchol& v) {
                 if (v.getZastavka() != nullptr) {
-                    this->filtrovaneZastavky.push_back(*(v.getZastavka()));
+                    aktualneZastavky.insertLast().data_ = (*(v.getZastavka()));
                 }
             };
 
             Algoritmus::algoritmus(begin, this->hierarchiaZastavok.end(), obecPredikat, pridajDoVysledku);
-            vypisVsetkyZastavky(this->filtrovaneZastavky);
+
+            if (zoradenie == 1)
+            {
+                zobrazMenuStvrtaCast(aktualneZastavky);
+                break;
+            }
+            vypisZastavky(aktualneZastavky);
             break;
         }
 
         case 5: {
+            ds::amt::ImplicitSequence<Zastavka> aktualneZastavky;
+            aktualneZastavky.reserveCapacity(2650);
+
             string hladanyText;
         	cout << "Zadajte ulicu: ";
         	getline(cin, hladanyText);
 
-            this->filtrovaneZastavky.clear();
 
-            cout << hladanyText << endl;
             IteratorHierarchie begin(&this->hierarchiaZastavok, aktualnaPozicia);
+
+            cout << "Chcete tieto zastavky zoradit?\n[1]ano [2]nie" << endl;
+            cin >> zoradenie;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            if (zoradenie != 1 && zoradenie != 2)
+            {
+                cout << "Zly vyber. Automaticky sa zastavky nebudu zoradovat!" << endl;
+                zoradenie = 2;
+            }
 
             // isOnStreet funkcia
             auto ulicaPredikat = [&hladanyText](const Vrchol& v) -> bool {
@@ -443,15 +556,20 @@ void Semestralka::zobrazMenuDruhaCast()
                     return v.getZastavka()->ulica.find(hladanyText) != string::npos;
 	            }
             };
-            auto pridajDoVysledku = [this](const Vrchol& v) {
+            auto pridajDoVysledku = [&aktualneZastavky](const Vrchol& v) {
                 if (v.getZastavka() != nullptr) {
-                    this->filtrovaneZastavky.push_back(*(v.getZastavka()));
+                    aktualneZastavky.insertLast().data_ = *(v.getZastavka());
                 }
             };
 
             Algoritmus::algoritmus(begin, this->hierarchiaZastavok.end(), ulicaPredikat, pridajDoVysledku);
 
-            vypisVsetkyZastavky(this->filtrovaneZastavky);
+            if (zoradenie == 1)
+            {
+                zobrazMenuStvrtaCast(aktualneZastavky);
+                break;
+            }
+            vypisZastavky(aktualneZastavky);
             break;
         }
         default:
@@ -505,3 +623,58 @@ void Semestralka::zobrazMenuTretiaCast()
         }
     }
 }
+
+void Semestralka::zobrazMenuStvrtaCast(ds::amt::ImplicitSequence<Zastavka>& zastavky)
+{
+    int volba;
+    int idZastavky;
+
+    ds::adt::QuickSort<Zastavka> quickSort;
+
+    while (true) {
+        cout << "\n========== MENU STVRTEJ UROVNE ==========" << endl;
+        cout << "1. Zoradit nazvy abecedne" << endl;
+        cout << "2. Zoradit podla ID" << endl;
+        cout << "0. Navrat do hlavneho menu" << endl;
+        cout << "=========================================" << endl;
+        cout << "Zadajte cislo volby: ";
+        cin >> volba;
+
+        // Clear input buffer
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        switch (volba) {
+        case 0:
+            return;
+        case 1: {
+            auto porovnajNazov = [](const Zastavka& a, const Zastavka& b) -> bool {
+	            if (a.obec != b.obec)
+	            {
+                    return a.obec < b.obec;
+	            }
+                return a.ulica < b.ulica;
+            };
+
+        	cout << "Zastavky zoradene abecedne: " << endl;
+            quickSort.sort(zastavky, porovnajNazov);
+            vypisZastavky(zastavky);
+            return;
+        }
+        case 2: {
+            auto porovnajID = [](const Zastavka& a, const Zastavka& b) -> bool {
+
+                return a.id < b.id;
+                };
+
+            cout << "Zastavky zoradene podla ID: " << endl;
+            quickSort.sort(zastavky, porovnajID);
+            vypisZastavky(zastavky);
+            return;
+        }
+        default:
+            cout << "Neplatna volba. Skuste znova." << endl;
+        }
+    }
+}
+
+

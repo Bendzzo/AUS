@@ -8,8 +8,7 @@ int main() {
     initHeapMonitor();
 
     std::vector<Zastavka> zastavky;
-    std::vector<Zastavka> filtrovaneZastavky;
-    Semestralka semestralka(zastavky, filtrovaneZastavky);
+    Semestralka semestralka(zastavky);
 
     semestralka.nacitajVsetkyZastavky("GRT_Stops.csv");
 
@@ -19,6 +18,7 @@ int main() {
         std::cout << "1. Prva uroven" << std::endl;
         std::cout << "2. Druha uroven" << std::endl;
         std::cout << "3. Tretia uroven" << std::endl;
+        //std::cout << "4. Stvrta uroven" << std::endl;
         std::cout << "0. Koniec" << std::endl;
         std::cout << "==========================" << std::endl;
         std::cout << "Zadajte cislo volby: ";
@@ -49,6 +49,11 @@ int main() {
             semestralka.zobrazMenuTretiaCast();
             break;
         }
+        /*case 4:
+        {
+            semestralka.zobrazMenuStvrtaCast();
+            break;
+        }*/
         default:
         {
             std::cout << "Nespravna volba, skuste este raz" << std::endl;
