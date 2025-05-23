@@ -7,40 +7,37 @@
 
 namespace ds::utils
 {
-    class VectorInsertAnalyzer : public ComplexityAnalyzer<std::vector<int>> 
+    class VectorInsertAnalyzer : public ComplexityAnalyzer<std::vector<int>>
     {
-        public: 
-            VectorInsertAnalyzer() :
-                ComplexityAnalyzer("VectorPushBack"),
-                rng_(144)
-            {
-                this->registerBeforeOperation([&](std::vector<int>& structure)
-                    {
-                        std::uniform_int_distribution<size_t> dist(0, structure.size());
-                        size_t index = dist(rng_);
-                        preparedIndex_ = index;
-                    });
+    public:
+        VectorInsertAnalyzer() :
+            ComplexityAnalyzer("VectorPushBack"),
+            rng_(144)
+        {
+            this->registerBeforeOperation([&](std::vector<int>& structure)
+                {
+                    std::uniform_int_distribution<size_t> dist(0, structure.size());
+                    size_t index = dist(rng_);
+                    preparedIndex_ = index;
+                });
+        }
+        void growToSize(std::vector<int>& structure, size_t size) override
+        {
+            //structure.resize(size);
+            while (structure.size() < size) {
+                structure.push_back(0);
             }
-            void growToSize(std::vector<int>& structure, size_t size) override
-            {
-                //structure.resize(size);
-                while (structure.size() < size) {
-                    structure.push_back(0);
-                }
-            }
-            void executeOperation(std::vector<int>& structure) override 
-            {
-                
-                auto position = structure.begin() + preparedIndex_;
-                structure.insert(position, 0);
-            }
-        private:  
-            std::default_random_engine rng_;
-            size_t preparedIndex_;
+        }
+        void executeOperation(std::vector<int>& structure) override
+        {
+
+            auto position = structure.begin() + preparedIndex_;
+            structure.insert(position, 0);
+        }
+    private:
+        std::default_random_engine rng_;
+        size_t preparedIndex_;
     };
-
-
-
 
 
     /**
@@ -53,7 +50,7 @@ namespace ds::utils
         explicit ListAnalyzer(const std::string& name);
 
     protected:
-        void growToSize(List& structure, size_t size) override;        
+        void growToSize(List& structure, size_t size) override;
 
         size_t getRandomIndex() const;
         int getRandomData() const;
@@ -110,15 +107,22 @@ namespace ds::utils
         index_(0),
         data_(0)
     {
-        // TODO 01
+        ComplexityAnalyzer<List>::registerBeforeOperation([this](List& list)
+            {
+                std::uniform_int_distribution<size_t> indexDist(0, list.size() - 1);
+                index_ = indexDist(rngIndex_);
+                data_ = rngData_();
+            });
     }
 
     template <class List>
     void ListAnalyzer<List>::growToSize(List& structure, size_t size)
     {
-        // TODO 01
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        const size_t toInsert = size - structure.size();
+        for (size_t i = 0; i < toInsert; ++i)
+        {
+            structure.push_back(rngData_());
+        }
     }
 
     template<class List>
@@ -144,9 +148,8 @@ namespace ds::utils
     template <class List>
     void ListInsertAnalyzer<List>::executeOperation(List& structure)
     {
-        // TODO 01
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        auto data = this->getRandomData();
+        structure.insert(structure.begin(), data);
     }
 
     //----------
@@ -160,9 +163,7 @@ namespace ds::utils
     template <class List>
     void ListRemoveAnalyzer<List>::executeOperation(List& structure)
     {
-        // TODO 01
-        // po implementacii vymazte vyhodenie vynimky!
-        throw std::runtime_error("Not implemented yet");
+        structure.erase(structure.begin());
     }
 
     //----------

@@ -123,9 +123,9 @@ namespace ds::utils
     class ComplexityAnalyzer :
         public LeafAnalyzer,
         public std::conditional_t<
-            std::is_default_constructible_v<Structure>,
-            PrototypeFactory<Structure>,
-            IPrototypeFactory<Structure>
+        std::is_default_constructible_v<Structure>,
+        PrototypeFactory<Structure>,
+        IPrototypeFactory<Structure>
         >
     {
     public:
@@ -201,44 +201,37 @@ namespace ds::utils
     template<class Structure>
     void ComplexityAnalyzer<Structure>::runReplications(Structure structurePrototype)
     {
-        // TODO 01
-        // po implementacii vymazte vyhodenie vynimky!
-		
-        //Priprava velkosti
         std::vector<size_t> sizes;
+        sizes.reserve(this->getStepCount());
         for (size_t step = 0; step < this->getStepCount(); ++step)
         {
-            size_t size = (step + 1) * this->getStepSize();
-			sizes.push_back(size);
+            const size_t expectedSize = (step + 1) * this->getStepSize();
+            sizes.push_back(expectedSize);
         }
 
-        //Vsetky replikacie
-        std::vector<std::vector<duration_t>> replicationsResults;
-        for (size_t repl = 0; repl < this->getReplicationCount(); repl++)
+        std::vector<std::vector<duration_t>> results;
+        results.reserve(this->getReplicationCount());
+        for (size_t replication = 0; replication < this->getReplicationCount(); ++replication)
         {
-            //Jedna replikacia
-            std::vector<duration_t> replicationResults;
+            std::vector<duration_t> durations;
+            durations.reserve(this->getStepCount());
             Structure structure(structurePrototype);
-            for (size_t size : sizes)
+            for (size_t step = 0; step < this->getStepCount(); ++step)
             {
-                this->growToSize(structure, size);
-
+                const size_t expectedSize = sizes[step];
+                this->growToSize(structure, expectedSize);
                 beforeOperation_(structure);
-
-                auto before = std::chrono::high_resolution_clock::now();
+                auto start = std::chrono::high_resolution_clock::now();
                 this->executeOperation(structure);
-                auto after = std::chrono::high_resolution_clock::now();
-               
+                auto end = std::chrono::high_resolution_clock::now();
                 afterOperation_(structure);
-
-                auto duration = std::chrono::duration_cast<duration_t>(after - before);
-
-                replicationResults.push_back(duration);
+                auto duration = std::chrono::duration_cast<duration_t>(end - start);
+                durations.push_back(duration);
             }
-            replicationsResults.push_back(std::move(replicationResults));
+            results.push_back(std::move(durations));
         }
-        //Ulozenie vysledkov
-        this->saveToCsvFile(sizes, replicationsResults);
+
+        this->saveToCsvFile(sizes, results);
     }
 
     template <class Structure>

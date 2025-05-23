@@ -35,7 +35,7 @@ public:
 		delete tabulkaZastavok;
    }
    void nacitajVsetkyZastavky(std::string nazovSuboru);
-   Zastavka* najdiZastavkuPodlaID(int id);
+   Zastavka* najdiZastavkuPodlaID(int& id);
    void zobrazMenuPrvaCast();  
    void zobrazMenuDruhaCast();
    void zobrazMenuTretiaCast();

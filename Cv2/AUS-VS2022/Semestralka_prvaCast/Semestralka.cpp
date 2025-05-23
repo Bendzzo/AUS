@@ -172,7 +172,7 @@ void Semestralka::nacitajVsetkyZastavky(string nazovSuboru)
 }
 
 
-Zastavka* Semestralka::najdiZastavkuPodlaID(int id)
+Zastavka* Semestralka::najdiZastavkuPodlaID(int& id)
 {
     try
     {
