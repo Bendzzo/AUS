@@ -18,12 +18,12 @@ namespace ds::utils
         std::default_random_engine rngKey_;
         
     protected:
-        int key;
-        int data;
+        int key_;
+        int data_;
         std::vector<int> insertedKeys_;
     };
 
-
+    /////////////
     template<class TableType>
     class TableInsertAnalyzer : public TableAnalyzer<TableType>
     {
@@ -54,18 +54,19 @@ namespace ds::utils
         TablesAnalyzer();
     };
 
-    //------------------------
+    /////////////////
+    
     template <class TableType>
     TableAnalyzer<TableType>::TableAnalyzer(const std::string& name)
-        : ComplexityAnalyzer<TableType>(name), rngData_(144), rngKey_(144), key(0), data(0)
+        : ComplexityAnalyzer<TableType>(name), rngData_(144), rngKey_(144), key_(0), data_(0)
     {
         this->registerBeforeOperation([&](TableType& structure)
             {
                 std::uniform_int_distribution<int> keyDist(1, 1000000);
                 std::uniform_int_distribution<int> dataDist(1, 1000);
 
-                key = keyDist(rngKey_);
-                data = dataDist(rngData_);
+                key_ = keyDist(rngKey_);
+                data_ = dataDist(rngData_);
             });
     }
 
@@ -82,10 +83,13 @@ namespace ds::utils
             int key = keyDist(rngKey_);
             int data = dataDist(rngData_);
 
-            if (!structure.contains(key))
+            try
             {
                 structure.insert(key, data);
                 insertedKeys_.push_back(key);
+            }
+            catch (const std::logic_error&)
+            {
             }
         }
     }
@@ -100,7 +104,13 @@ namespace ds::utils
     template <class TableType>
     void TableInsertAnalyzer<TableType>::executeOperation(TableType& structure)
     {
-        structure.insert(this->key, this->data);
+        try
+        {
+            structure.insert(this->key_, this->data_);
+        }
+        catch (const std::logic_error&)
+        {
+        }
     }
 
     template <class TableType>
@@ -110,43 +120,32 @@ namespace ds::utils
     {
         this->registerBeforeOperation([&](TableType& structure)
             {
-                this->insertedKeys_.clear();
+                std::uniform_int_distribution<int> choiceDist(1, 4);
 
-                std::uniform_int_distribution<int> keyDist(1, 1000000);
-                int randomKey = keyDist(this->rngForFind_);
-                this->insertedKeys_.push_back(randomKey);
+                if (choiceDist(rngForFind_) < 4 && !this->insertedKeys_.empty())
+                {
+                    std::uniform_int_distribution<size_t> indexDist(0, this->insertedKeys_.size() - 1);
+                    size_t randomIndex = indexDist(rngForFind_);
+                    this->key_ = this->insertedKeys_[randomIndex];
+                }
+                else
+                {
+                    std::uniform_int_distribution<int> keyDist(1, 1000000);
+                    this->key_ = keyDist(rngForFind_);
+                }
             });
     }
 
     template <class TableType>
     void TableFindAnalyzer<TableType>::executeOperation(TableType& structure)
     {
-        if (!this->insertedKeys_.empty())
+        try
         {
-            std::uniform_int_distribution<size_t> indexDist(0, this->insertedKeys_.size() - 1);
-            size_t randomIndex = indexDist(rngForFind_);
-            int keyToFind = this->insertedKeys_[randomIndex];
-
-            try
-            {
-                structure.find(keyToFind);
-            }
-            catch (...)
-            {
-            }
+            structure.find(this->key_);
         }
-        else
+    	catch (...)
         {
-            std::uniform_int_distribution<int> keyDist(1, 1000000);
-            int randomKey = keyDist(rngForFind_);
-
-            try
-            {
-                structure.find(randomKey);
-            }
-            catch (...)
-            {
-            }
+	        
         }
     }
 
@@ -157,6 +156,6 @@ namespace ds::utils
         CompositeAnalyzer("Tables")
     {
         this->addAnalyzer(std::make_unique<TableInsertAnalyzer<adt::HashTable<int, int>>>("Hash-table-insert"));
-        this->addAnalyzer(std::make_unique<TableFindAnalyzer<adt::HashTable<int, int>>>("Hash-table-remove"));
+        this->addAnalyzer(std::make_unique<TableFindAnalyzer<adt::HashTable<int, int>>>("Hash-table-find"));
     }
 }
