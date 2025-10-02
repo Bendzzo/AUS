@@ -1,3 +1,3 @@
 # AUS
  
-Vraj zo mna bude lepsi programator. Tesim sa :O
+Semestralna praca z predmetu Algoritmy a udajove struktury 1. 
